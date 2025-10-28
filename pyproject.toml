@@ -1,0 +1,7 @@
+[project]
+name = "memx"
+version = "0.1.0"
+description = "Lightweight and agnostic memory layer for LLMs"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
