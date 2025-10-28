@@ -7,7 +7,7 @@ class BaseMemory(ABC):
         pass
 
     @abstractmethod
-    def get(self) -> list[str]:
+    def get(self) -> list[dict]:
         pass
 
     def get_id(self) -> str:

@@ -6,6 +6,7 @@ from memx.memory import BaseMemory
 
 
 class DiskMemory(BaseMemory):
+    # TODO: async open?
     def __init__(self, session_id: str = None, dir: str = None):
         file_id = session_id if session_id else str(uuid4())
         file_dir = dir if dir else Path.home() / ".memx"
