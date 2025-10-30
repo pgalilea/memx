@@ -1,7 +1,9 @@
 import json
 from datetime import datetime, timezone
+from textwrap import dedent
 from uuid import uuid4
 
+import orjson
 from sqlalchemy import create_engine, text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import Session, sessionmaker
@@ -12,11 +14,11 @@ from memx.memory import BaseMemory
 class SQLiteMemory(BaseMemory):
     table_sql = """
         CREATE TABLE IF NOT EXISTS '{table_name}' (
-            id TEXT PRIMARY KEY, -- session_id
-            messages JSONB,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            session_id TEXT,
+            message JSONB,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
+        CREATE INDEX IF NOT EXISTS session_index ON '{table_name}' (session_id);
     """
 
     def __init__(self, uri: str, table: str, session_id: str = None):
@@ -43,9 +45,10 @@ class SQLiteMemory(BaseMemory):
             class_=Session,
         )
 
-        with self.SyncSessionLocal() as session:
-            session.execute(text(self.table_sql.format(table_name=self.table_name)))
-            session.commit()
+        with self.sync_engine.begin() as conn:
+            conn.connection.executescript(
+                self.table_sql.format(table_name=self.table_name)
+            )
 
         if session_id:
             self._session_id = session_id
@@ -53,27 +56,39 @@ class SQLiteMemory(BaseMemory):
             self._session_id = str(uuid4())
 
     def add(self, messages: list[dict]):
-        # TODO: append messages to existing messages
-        upsert_sql = f"""
-            INSERT INTO '{self.table_name}' (id, messages, created_at, updated_at)
-            VALUES (:id, :messages, :created_at, :updated_at)
-            ON CONFLICT (id) DO UPDATE SET
-            messages = :messages,
-            updated_at = :updated_at
+        insert_sql = f"""
+            INSERT INTO '{self.table_name}' (session_id, message, created_at)
+            VALUES (:session_id, :message, :created_at);
         """
 
         ts_now = datetime.now(timezone.utc)
         data = {
-            "id": self._session_id,
-            "messages": json.dumps(messages),
+            "session_id": self._session_id,
+            "message": json.dumps(messages),
             "created_at": ts_now,
-            "updated_at": ts_now,
         }
 
         with self.SyncSessionLocal() as session:
-            session.execute(text(upsert_sql), data)
+            session.execute(text(insert_sql), data)
             session.commit()
 
     def get(self) -> list[dict]:
-        # TODO: implement
-        pass
+        with self.SyncSessionLocal() as session:
+            result = session.execute(
+                text(
+                    dedent(
+                        f"""
+                        SELECT * FROM '{self.table_name}'
+                        WHERE session_id = :session_id 
+                        ORDER BY created_at ASC;
+                        """
+                    )
+                ),
+                {"session_id": self._session_id},
+            )
+
+        result = [dict(row._mapping) for row in result.fetchall()]
+        for i in range(len(result)):
+            result[i]["message"] = orjson.loads(result[i]["message"])
+
+        return result
