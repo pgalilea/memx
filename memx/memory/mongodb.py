@@ -1,15 +1,13 @@
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from bson.objectid import ObjectId
-from pymongo import AsyncMongoClient, MongoClient, ReturnDocument
+from pymongo import AsyncMongoClient, MongoClient
 from pymongo.server_api import ServerApi
 
 from memx.memory import BaseMemory
 
 
 class MongoDBMemory(BaseMemory):
-    # TODO: async client
     def __init__(
         self, uri: str, database: str, collection: str, session_id: str = None
     ):
@@ -25,27 +23,50 @@ class MongoDBMemory(BaseMemory):
         self.collection = self.db[collection]
         self.async_collection = self.async_db[collection]
 
+        self.sync = _sync(self)  # to group sync methods
+
         if session_id:
             self._session_id = session_id
         else:
             self._session_id = str(uuid4())
 
-        # self.sync = self._sync(self)  # to group sync methods
+    async def add(self, messages: list[dict]):
+        ts_now = datetime.now(timezone.utc)
 
-    def add(self, messages: list[dict]):
-        _now = datetime.now(timezone.utc)
-
-        self.collection.find_one_and_update(
+        await self.async_collection.find_one_and_update(
             {"session_id": self._session_id},
             {
                 "$push": {"messages": {"$each": messages}},
-                "$setOnInsert": {"created_at": _now},
-                "$set": {"updated_at": _now},
+                "$setOnInsert": {"created_at": ts_now},
+                "$set": {"updated_at": ts_now},
+            },
+            upsert=True,
+        )
+
+    async def get(self) -> list[dict]:
+        doc = await self.async_collection.find_one({"session_id": self._session_id})
+
+        return (doc or {}).get("messages", [])
+
+
+class _sync(BaseMemory):
+    def __init__(self, parent: "MongoDBMemory"):
+        self.pm = parent  # parent memory (?)
+
+    def add(self, messages: list[dict]):
+        ts_now = datetime.now(timezone.utc)
+
+        self.pm.collection.find_one_and_update(
+            {"session_id": self.pm._session_id},
+            {
+                "$push": {"messages": {"$each": messages}},
+                "$setOnInsert": {"created_at": ts_now},
+                "$set": {"updated_at": ts_now},
             },
             upsert=True,
         )
 
     def get(self) -> list[dict]:
-        doc = self.collection.find_one({"session_id": self._session_id})
+        doc = self.pm.collection.find_one({"session_id": self.pm._session_id})
 
         return (doc or {}).get("messages", [])
