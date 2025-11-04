@@ -9,14 +9,17 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = [
+all = [
     "aiosqlite>=0.21.0",
     "orjson>=3.11.4",
     "psycopg>=3.2.12",
     "pymongo>=4.15.3",
+    "sqlalchemy>=2.0.44"
+]
+
+dev = [
     "pytest>=8.4.2",
-    "ruff>=0.14.2",
-    "sqlalchemy>=2.0.44",
+    "ruff>=0.14.2"
 ]
 
 [tool.ruff]

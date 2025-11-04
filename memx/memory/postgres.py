@@ -1,8 +1,8 @@
-import json
 from datetime import datetime, timezone
 from textwrap import dedent
 from uuid import uuid4
 
+import orjson
 from sqlalchemy import create_engine, text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import Session, sessionmaker
@@ -60,7 +60,7 @@ class PostgresMemory(BaseMemory):
         ts_now = datetime.now(timezone.utc)
         data = {
             "session_id": self._session_id,
-            "message": json.dumps(messages),
+            "message": orjson.dumps(messages).decode("utf-8"),
             "updated_at": ts_now,
         }
 

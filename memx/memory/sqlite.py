@@ -67,10 +67,12 @@ class SQLiteMemory(BaseMemory):
             )
 
         result = [dict(row._mapping) for row in result.fetchall()]
-        for i in range(len(result)):
-            result[i]["message"] = orjson.loads(result[i]["message"])
+        messages = []
 
-        return result
+        for r in result:
+            messages.extend(orjson.loads(r["message"]))
+
+        return messages
 
     def init_queries(self):
         """."""
@@ -90,7 +92,7 @@ class SQLiteMemory(BaseMemory):
         """)
 
         self.get_sql = dedent(f"""
-            SELECT * FROM {self.table_name}
+            SELECT message FROM {self.table_name}
             WHERE session_id = :session_id 
             ORDER BY created_at ASC;
         """)
