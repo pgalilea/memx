@@ -1,10 +1,9 @@
-import json
 from datetime import datetime, timezone
 from textwrap import dedent
 from uuid import uuid4
 
 import orjson
-from sqlalchemy import create_engine, text
+from sqlalchemy import Result, create_engine, text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -51,7 +50,7 @@ class SQLiteMemory(BaseMemory):
         ts_now = datetime.now(timezone.utc)
         data = {
             "session_id": self._session_id,
-            "message": json.dumps(messages),
+            "message": orjson.dumps(messages).decode("utf-8"),
             "created_at": ts_now,
         }
 
@@ -66,11 +65,7 @@ class SQLiteMemory(BaseMemory):
                 {"session_id": self._session_id},
             )
 
-        result = [dict(row._mapping) for row in result.fetchall()]
-        messages = []
-
-        for r in result:
-            messages.extend(orjson.loads(r["message"]))
+        messages = _merge_messages(result)
 
         return messages
 
@@ -106,7 +101,7 @@ class _sync(BaseMemory):
         ts_now = datetime.now(timezone.utc)
         data = {
             "session_id": self.pm._session_id,
-            "message": json.dumps(messages),
+            "message": orjson.dumps(messages).decode("utf-8"),
             "created_at": ts_now,
         }
 
@@ -121,8 +116,17 @@ class _sync(BaseMemory):
                 {"session_id": self.pm._session_id},
             )
 
-        result = [dict(row._mapping) for row in result.fetchall()]
-        for i in range(len(result)):
-            result[i]["message"] = orjson.loads(result[i]["message"])
+        messages = _merge_messages(result)
 
-        return result
+        return messages
+
+
+def _merge_messages(msg_result: Result) -> list[dict]:
+    # list.extend is the fastest approach
+    result = [dict(row._mapping) for row in msg_result.fetchall()]
+    messages = []
+
+    for r in result:
+        messages.extend(orjson.loads(r["message"]))
+
+    return messages
