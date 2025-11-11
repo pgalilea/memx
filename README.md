@@ -23,6 +23,48 @@ pip install .
 
 ## 🚀 Quickstart
 
+### OpenAI
+Simple conversation with https://github.com/openai/openai-python
+```Python
+# https://platform.openai.com/docs/guides/conversation-state?api-mode=responses
+# tested on openai==2.6.1
+
+from openai import OpenAI
+from memx.memory.sqlite import SQLiteMemory
+
+sqlite_uri = "sqlite+aiosqlite:///message-storage.db"
+m1 = SQLiteMemory(sqlite_uri, "memx-messages")
+
+client = OpenAI()
+
+m1.sync.add([{"role": "user", "content": "tell me a good joke about programmers"}])
+
+first_response = client.responses.create(
+    model="gpt-4o-mini", input=m1.sync.get(), store=False
+)
+
+print(first_response.output_text)
+
+m1.sync.add(
+    [{"role": r.role, "content": r.content[0].text} for r in first_response.output]
+)
+
+m1.sync.add([{"role": "user", "content": "tell me another"}])
+
+second_response = client.responses.create(
+    model="gpt-4o-mini", input=m1.sync.get(), store=False
+)
+
+m1.sync.add(
+    [{"role": r.role, "content": r.content[0].text} for r in second_response.output]
+)
+
+print(f"\n\n{second_response.output_text}")
+
+print(m1.sync.get())
+```
+### Pydantic AI
+Message history with async Pydantic AI + Gemini
 ```Python
 import asyncio
 import os
