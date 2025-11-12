@@ -1,8 +1,11 @@
-# memx
-
+<p align="center">
+  <a href="https://www.google.com"><img src="https://i.ibb.co/JjYq8fzW/memx.png" alt="memx - memory layer"></a>
+</p>
 Simple yet powerful memory layer for LLMs.
 
-**Disclaimer**: In active development
+<br/>
+
+**Important Disclaimer**: This library is intended to be production-ready, but currently is in active development.
 
 
 ##  🔥 Key Features
@@ -145,10 +148,12 @@ m3 = MongoDBMemory(uri=mongodb_uri, database="memx-test", collection="memx-messa
 ```
 
 ## Tasks
-- [x] mongodb backend
-- [x] SQLite backend
-- [x] Postgres backend
+- [x] Add mongodb backend
+- [x] Add SQLite backend
+- [x] Add Postgres backend
+- [ ] Add redis backend
 - [ ] Add tests
 - [ ] Publish on pypi
-- [ ] full sync support
-- [ ] add docstrings
+- [ ] Add full sync support
+- [ ] Add docstrings
+- [ ] Add async init
