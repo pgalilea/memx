@@ -13,6 +13,7 @@ from memx.memory import BaseMemory
 class PostgresMemory(BaseMemory):
     def __init__(self, uri: str, table: str, schema: str = "public", session_id: str = None):
         self.table_name = f'"{table.strip()}"'
+        self.is_table_created = False
         self.init_queries()
 
         driver, _ = uri.split(":", 1)
@@ -45,10 +46,6 @@ class PostgresMemory(BaseMemory):
             class_=Session,
         )  # type: ignore
 
-        with self.SyncSessionCtx() as session:
-            session.execute(text(self.table_sql))
-            session.commit()
-
         self.sync = _sync(self)  # to group sync methods
 
         if session_id:
@@ -57,6 +54,8 @@ class PostgresMemory(BaseMemory):
             self._session_id = str(uuid4())
 
     async def add(self, messages: list[dict]):
+        await self._pre_add()
+
         ts_now = datetime.now(timezone.utc)
         data = {
             "session_id": self._session_id,
@@ -106,13 +105,50 @@ class PostgresMemory(BaseMemory):
             WHERE session_id = :session_id;
         """)
 
+    async def _pre_add(self):
+        if not self.is_table_created:
+            async with self.AsyncSessionCtx() as session:
+                await session.execute(text(self.table_sql))
+                await session.commit()
+
+            self.is_table_created = True
+
 
 class _sync(BaseMemory):
     def __init__(self, parent: "PostgresMemory"):
         self.pm = parent  # parent memory (?)
 
     def add(self, messages: list[dict]):
-        pass
+        # TODO: refactor this with sqlite
+
+        self._pre_add()
+
+        ts_now = datetime.now(timezone.utc)
+        data = {
+            "session_id": self.pm._session_id,
+            "message": orjson.dumps(messages).decode("utf-8"),
+            "updated_at": ts_now,
+        }
+
+        with self.pm.SyncSessionCtx() as session:
+            session.execute(text(self.pm.insert_sql), data)
+            session.commit()
 
     def get(self) -> list[dict]:
-        pass
+        with self.pm.SyncSessionCtx() as session:
+            result = session.execute(
+                text(self.pm.get_sql),
+                {"session_id": self.pm._session_id},
+            )
+
+        result = result.first()
+        result = getattr(result, "message", [])
+
+        return result
+
+    def _pre_add(self):
+        with self.pm.SyncSessionCtx() as session:
+            session.execute(text(self.pm.table_sql))
+            session.commit()
+
+        self.pm.is_table_created = True

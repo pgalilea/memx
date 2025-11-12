@@ -11,4 +11,4 @@ class BaseMemory(ABC):
         pass
 
     def get_id(self) -> str:
-        return self._session_id
+        return self._session_id  # type: ignore

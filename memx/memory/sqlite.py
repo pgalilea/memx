@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from textwrap import dedent
 from uuid import uuid4
+import copy
 
 import orjson
 from sqlalchemy import Result, create_engine, text
@@ -13,6 +14,7 @@ from memx.memory import BaseMemory
 class SQLiteMemory(BaseMemory):
     def __init__(self, uri: str, table: str, session_id: str = None):
         self.table_name = f"'{table.strip()}'"
+        self.is_table_created = False
         self.init_queries()
 
         self.async_engine = create_async_engine(uri, echo=False, future=True)
@@ -36,9 +38,6 @@ class SQLiteMemory(BaseMemory):
             class_=Session,
         )
 
-        with self.sync_engine.begin() as conn:
-            conn.connection.executescript(self.table_sql)
-
         self.sync = _sync(self)  # to group sync methods
 
         if session_id:
@@ -47,12 +46,9 @@ class SQLiteMemory(BaseMemory):
             self._session_id = str(uuid4())
 
     async def add(self, messages: list[dict]):
-        ts_now = datetime.now(timezone.utc)
-        data = {
-            "session_id": self._session_id,
-            "message": orjson.dumps(messages).decode("utf-8"),
-            "created_at": ts_now,
-        }
+        await self._pre_add()
+
+        data = self._format_messages(messages)
 
         async with self.AsyncSessionCtx() as session:
             await session.execute(text(self.insert_sql), data)
@@ -92,18 +88,35 @@ class SQLiteMemory(BaseMemory):
             ORDER BY created_at ASC;
         """)
 
+    async def _pre_add(self):
+        if not self.is_table_created:
+            async with self.AsyncSessionCtx() as session:
+                stmts = [smt for smt in self.table_sql.split(";") if smt.strip()]
+                for st in stmts:
+                    await session.execute(text(st))
+                await session.commit()
+
+            self.is_table_created = True
+
+    def _format_messages(self, messages: list[dict]) -> dict:
+        ts_now = datetime.now(timezone.utc)
+        data = {
+            "session_id": self._session_id,
+            "message": orjson.dumps(messages).decode("utf-8"),
+            "created_at": ts_now,
+        }
+
+        return data
+
 
 class _sync(BaseMemory):
     def __init__(self, parent: "SQLiteMemory"):
         self.pm = parent  # parent memory (?)
 
     def add(self, messages: list[dict]):
-        ts_now = datetime.now(timezone.utc)
-        data = {
-            "session_id": self.pm._session_id,
-            "message": orjson.dumps(messages).decode("utf-8"),
-            "created_at": ts_now,
-        }
+        self._pre_add()
+
+        data = self.pm._format_messages(messages)
 
         with self.pm.SyncSessionCtx() as session:
             session.execute(text(self.pm.insert_sql), data)
@@ -119,6 +132,13 @@ class _sync(BaseMemory):
         messages = _merge_messages(result)
 
         return messages
+
+    def _pre_add(self):
+        if not self.pm.is_table_created:
+            with self.pm.sync_engine.begin() as conn:
+                conn.connection.executescript(self.pm.table_sql)
+
+            self.pm.is_table_created = True
 
 
 def _merge_messages(msg_result: Result) -> list[dict]:

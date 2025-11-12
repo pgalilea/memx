@@ -1,6 +1,6 @@
 [project]
 name = "memx"
-version = "0.1.5"
+version = "0.1.6"
 description = "Lightweight and agnostic memory layer for LLMs"
 readme = "README.md"
 license = "MIT"
@@ -11,7 +11,7 @@ authors = [
 ]
 dependencies = [
     "aiofiles>=25.1.0",
-    "orjson>=3.11.4"
+    "orjson>=3.11.4",
 ]
 
 [dependency-groups]
@@ -25,16 +25,16 @@ all = [
     "aiosqlite>=0.21.0",
     "psycopg>=3.2.12",
     "pymongo>=4.15.3",
-    "sqlalchemy>=2.0.44"
+    "sqlalchemy[asyncio, postgresql-psycopg]>=2.0.44"
 ]
 
 sqlite = [
-    "sqlalchemy>=2.0.44",
+    "sqlalchemy[asyncio]>=2.0.44",
     "aiosqlite>=0.21.0"
 ]
 
 postgres = [
-    "sqlalchemy>=2.0.44",
+    "sqlalchemy[postgresql-psycopg, asyncio]>=2.0.44",
     "psycopg>=3.2.12"
 ]
 
