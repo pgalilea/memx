@@ -1,7 +1,6 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from textwrap import dedent
 from uuid import uuid4
-import copy
 
 import orjson
 from sqlalchemy import Result, create_engine, text
@@ -84,7 +83,7 @@ class SQLiteMemory(BaseMemory):
 
         self.get_sql = dedent(f"""
             SELECT message FROM {self.table_name}
-            WHERE session_id = :session_id 
+            WHERE session_id = :session_id
             ORDER BY created_at ASC;
         """)
 
@@ -99,7 +98,7 @@ class SQLiteMemory(BaseMemory):
             self.is_table_created = True
 
     def _format_messages(self, messages: list[dict]) -> dict:
-        ts_now = datetime.now(timezone.utc)
+        ts_now = datetime.now(UTC)
         data = {
             "session_id": self._session_id,
             "message": orjson.dumps(messages).decode("utf-8"),

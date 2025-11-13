@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from textwrap import dedent
 from uuid import uuid4
 
@@ -56,7 +56,7 @@ class PostgresMemory(BaseMemory):
     async def add(self, messages: list[dict]):
         await self._pre_add()
 
-        ts_now = datetime.now(timezone.utc)
+        ts_now = datetime.now(UTC)
         data = {
             "session_id": self._session_id,
             "message": orjson.dumps(messages).decode("utf-8"),
@@ -92,12 +92,12 @@ class PostgresMemory(BaseMemory):
         """)
 
         self.insert_sql = dedent(f"""
-            INSERT INTO {self.table_name} (session_id, message, updated_at) 
+            INSERT INTO {self.table_name} (session_id, message, updated_at)
             VALUES (:session_id, cast(:message as jsonb), :updated_at)
-            ON CONFLICT (session_id) 
-            DO UPDATE SET 
+            ON CONFLICT (session_id)
+            DO UPDATE SET
                 message = COALESCE({self.table_name}.message, '[]'::jsonb) || EXCLUDED.message,
-                updated_at = EXCLUDED.updated_at;        
+                updated_at = EXCLUDED.updated_at;
         """)
 
         self.get_sql = dedent(f"""
@@ -123,7 +123,7 @@ class _sync(BaseMemory):
 
         self._pre_add()
 
-        ts_now = datetime.now(timezone.utc)
+        ts_now = datetime.now(UTC)
         data = {
             "session_id": self.pm._session_id,
             "message": orjson.dumps(messages).decode("utf-8"),

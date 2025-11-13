@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import uuid4
 
 from pymongo import AsyncMongoClient, MongoClient
@@ -8,9 +8,7 @@ from memx.memory import BaseMemory
 
 
 class MongoDBMemory(BaseMemory):
-    def __init__(
-        self, uri: str, database: str, collection: str, session_id: str = None
-    ):
+    def __init__(self, uri: str, database: str, collection: str, session_id: str = None):
         self.client = MongoClient(uri)
         self.async_client = AsyncMongoClient(
             uri,
@@ -31,7 +29,7 @@ class MongoDBMemory(BaseMemory):
             self._session_id = str(uuid4())
 
     async def add(self, messages: list[dict]):
-        ts_now = datetime.now(timezone.utc)
+        ts_now = datetime.now(UTC)
 
         await self.async_collection.find_one_and_update(
             {"session_id": self._session_id},
@@ -54,7 +52,7 @@ class _sync(BaseMemory):
         self.pm = parent  # parent memory (?)
 
     def add(self, messages: list[dict]):
-        ts_now = datetime.now(timezone.utc)
+        ts_now = datetime.now(UTC)
 
         self.pm.collection.find_one_and_update(
             {"session_id": self.pm._session_id},

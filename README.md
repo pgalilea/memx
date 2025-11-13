@@ -1,25 +1,31 @@
 <p align="center">
-  <a href="https://www.google.com"><img src="https://i.ibb.co/JjYq8fzW/memx.png" alt="memx - memory layer"></a>
+  <a href="https://github.com/pgalilea/memx"><img src="https://i.ibb.co/JjYq8fzW/memx.png" alt="memx - memory layer"></a>
 </p>
-Simple yet powerful memory layer for LLMs.
 
 <br/>
+Lightweight and extensible memory layer for LLMs.
+<br/><br/>
 
-**Important Disclaimer**: This library is intended to be production-ready, but currently is in active development.
+**Important Disclaimer**: This library is intended to be production-ready, but currently is in active development. Fix the version and run your own tests :)
 
 
 ##  🔥 Key Features
-- **Framework agnostic**: Use your preferred agent framework.
+- **Framework agnostic**: Use your preferred AI agent framework.
 - **Own infrastructure**: Use your preferred cloud provider. No third-party api keys; your data, your rules.
 - **Multiple backends**: Move from your local *POC* to production deployment, seamlessly (SQLite, MongoDB, PostgreSQL).
-- **Sync and async api**: For modern and *legacy* frameworks. 
+- **Sync and async api**: Highly compatible with modern and *legacy* frameworks. 
 - **No forced schema**: As long it is a list of json serializable objects.
 - **Resumable memory**: Perfect for chat applications and REST APIs
 - **Robust**: Get production-ready code with minimal effort.
 
 
 ## ⚙️ Installation
-For the moment; download the repo and install it 
+
+From pypi
+```bash
+pip install memx-lm
+```
+Or clone the repo and install it 
 ```bash
 pip install . 
 ```
@@ -27,7 +33,7 @@ pip install .
 ## 🚀 Quickstart
 
 ### OpenAI
-Simple conversation with https://github.com/openai/openai-python
+Simple conversation with [OpenAI Python library](https://github.com/openai/openai-python)
 ```Python
 # https://platform.openai.com/docs/guides/conversation-state?api-mode=responses
 # tested on openai==2.6.1
@@ -67,7 +73,7 @@ print(f"\n\n{second_response.output_text}")
 print(m1.sync.get())
 ```
 ### Pydantic AI
-Message history with async Pydantic AI + Gemini
+Message history with async [Pydantic AI](https://ai.pydantic.dev/) + [Gemini](https://ai.google.dev/gemini-api/docs)
 ```Python
 import asyncio
 import os
@@ -156,4 +162,3 @@ m3 = MongoDBMemory(uri=mongodb_uri, database="memx-test", collection="memx-messa
 - [ ] Publish on pypi
 - [ ] Add full sync support
 - [ ] Add docstrings
-- [ ] Add async init
