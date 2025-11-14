@@ -49,6 +49,8 @@ class PostgresEngine(BaseEngine):
             class_=Session,
         )  # type: ignore
 
+        self.sync = _sync(self)
+
         if start_up:
             self.start_up()  # blocking operation
 
@@ -120,3 +122,28 @@ class PostgresEngine(BaseEngine):
         with self.SyncSession() as session:
             session.execute(text(self.table_sql))
             session.commit()
+
+
+class _sync:
+    def __init__(self, parent: "PostgresEngine"):
+        self.pe = parent
+
+    def get_session(self, id: str) -> PostgresMemory | None:
+        """Get a memory session."""
+        # TODO: refactor this with sqlite
+
+        with self.pe.SyncSession() as session:
+            result = (
+                session.execute(
+                    text(self.pe.get_session_sql),
+                    {"session_id": id},
+                )
+            ).first()
+
+        if result[0] == 1:  # type: ignore
+            engine_config = SQLEngineConfig(
+                table=self.pe.table_name,
+                add_query=self.pe.add_sql,
+                get_query=self.pe.get_sql,
+            )
+            return PostgresMemory(self.pe.AsyncSession, self.pe.SyncSession, engine_config, id)

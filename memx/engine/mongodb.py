@@ -1,6 +1,3 @@
-from datetime import UTC, datetime
-from uuid import uuid4
-
 from pymongo import AsyncMongoClient, MongoClient
 from pymongo.server_api import ServerApi
 
@@ -24,6 +21,8 @@ class MongoDBEngine(BaseEngine):
         self.sync_collection = self.db[collection]
         self.async_collection = self.async_db[collection]
 
+        self.sync = _sync(self)
+
     def create_session(self) -> MongoDBMemory:
         return MongoDBMemory(self.async_collection, self.sync_collection)
 
@@ -32,3 +31,16 @@ class MongoDBEngine(BaseEngine):
 
         if result:
             return MongoDBMemory(self.async_collection, self.sync_collection, id)
+
+
+class _sync:
+    def __init__(self, parent: "MongoDBEngine"):
+        self.pe = parent
+
+    def get_session(self, id: str) -> MongoDBMemory | None:
+        """Get a memory session."""
+
+        result = self.pe.sync_collection.find_one({"session_id": id})
+
+        if result:
+            return MongoDBMemory(self.pe.async_collection, self.pe.sync_collection, id)

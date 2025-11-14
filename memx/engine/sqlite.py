@@ -37,6 +37,8 @@ class SQLiteEngine(BaseEngine):
             class_=Session,
         )
 
+        self.sync = _sync(self)
+
         if start_up:
             self.start_up()  # blocking operation
 
@@ -104,3 +106,22 @@ class SQLiteEngine(BaseEngine):
 
         with self.sync_engine.begin() as conn:
             conn.connection.executescript(self.table_sql)
+
+
+class _sync:
+    def __init__(self, parent: "SQLiteEngine"):
+        self.pe = parent
+
+    def get_session(self, id: str) -> SQLiteMemory | None:
+        """Get a memory session."""
+
+        with self.pe.SyncSession() as session:
+            result = session.execute(text(self.pe.get_session_sql), {"session_id": id}).first()
+
+        if result[0] == 1:  # type: ignore
+            engine_config = SQLEngineConfig(
+                table=self.pe.table_name,
+                add_query=self.pe.add_sql,
+                get_query=self.pe.get_sql,
+            )
+            return SQLiteMemory(self.pe.AsyncSession, self.pe.SyncSession, engine_config, id)
