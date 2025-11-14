@@ -1,25 +1,21 @@
 from datetime import UTC, datetime
 from uuid import uuid4
 
-from pymongo import AsyncMongoClient, MongoClient
-from pymongo.server_api import ServerApi
+from pymongo.asynchronous.collection import AsyncCollection
+from pymongo.collection import Collection
 
 from memx.memory import BaseMemory
 
 
 class MongoDBMemory(BaseMemory):
-    def __init__(self, uri: str, database: str, collection: str, session_id: str = None):
-        self.client = MongoClient(uri)
-        self.async_client = AsyncMongoClient(
-            uri,
-            server_api=ServerApi(version="1", strict=True, deprecation_errors=True),
-        )
-
-        self.db = self.client[database]
-        self.async_db = self.async_client.get_database(database)
-
-        self.collection = self.db[collection]
-        self.async_collection = self.async_db[collection]
+    def __init__(
+        self,
+        async_collection: AsyncCollection,
+        sync_collection: Collection,
+        session_id: str = None,
+    ):
+        self.async_collection = async_collection
+        self.sync_collection = sync_collection
 
         self.sync = _sync(self)  # to group sync methods
 
@@ -54,7 +50,7 @@ class _sync(BaseMemory):
     def add(self, messages: list[dict]):
         ts_now = datetime.now(UTC)
 
-        self.pm.collection.find_one_and_update(
+        self.pm.sync_collection.find_one_and_update(
             {"session_id": self.pm._session_id},
             {
                 "$push": {"messages": {"$each": messages}},
@@ -65,6 +61,6 @@ class _sync(BaseMemory):
         )
 
     def get(self) -> list[dict]:
-        doc = self.pm.collection.find_one({"session_id": self.pm._session_id})
+        doc = self.pm.sync_collection.find_one({"session_id": self.pm._session_id})
 
         return (doc or {}).get("messages", [])
