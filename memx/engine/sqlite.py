@@ -1,6 +1,6 @@
 from textwrap import dedent
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -40,15 +40,34 @@ class SQLiteEngine(BaseEngine):
         if start_up:
             self.start_up()  # blocking operation
 
-    def get_session(self, session_id: str = None) -> SQLiteMemory:
-        """Get or create a memory session."""
+    def create_session(self) -> SQLiteMemory:
+        """Create a local memory session."""
 
         engine_config = SQLEngineConfig(
             table=self.table_name,
             add_query=self.add_sql,
             get_query=self.get_sql,
         )
-        return SQLiteMemory(self.AsyncSession, self.SyncSession, engine_config, session_id)
+        return SQLiteMemory(self.AsyncSession, self.SyncSession, engine_config)
+
+    async def get_session(self, id: str) -> SQLiteMemory | None:
+        """Get a memory session."""
+
+        async with self.AsyncSession() as session:
+            result = (
+                await session.execute(
+                    text(self.get_session_sql),
+                    {"session_id": id},
+                )
+            ).first()
+
+        if result[0] == 1:  # type: ignore
+            engine_config = SQLEngineConfig(
+                table=self.table_name,
+                add_query=self.add_sql,
+                get_query=self.get_sql,
+            )
+            return SQLiteMemory(self.AsyncSession, self.SyncSession, engine_config, id)
 
     def init_queries(self):
         """."""
@@ -71,6 +90,13 @@ class SQLiteEngine(BaseEngine):
             SELECT message FROM {self.table_name}
             WHERE session_id = :session_id
             ORDER BY created_at ASC;
+        """)
+
+        self.get_session_sql = dedent(f"""
+            SELECT EXISTS(
+                SELECT 1 FROM {self.table_name}
+                WHERE session_id=:session_id
+            ) as r;
         """)
 
     def start_up(self):

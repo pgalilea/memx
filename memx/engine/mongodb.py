@@ -24,7 +24,11 @@ class MongoDBEngine(BaseEngine):
         self.sync_collection = self.db[collection]
         self.async_collection = self.async_db[collection]
 
-    def get_session(self, session_id: str = None) -> MongoDBMemory:
-        """Get or create a memory session."""
+    def create_session(self) -> MongoDBMemory:
+        return MongoDBMemory(self.async_collection, self.sync_collection)
 
-        return MongoDBMemory(self.async_collection, self.sync_collection, session_id)
+    async def get_session(self, id: str) -> MongoDBMemory | None:
+        result = await self.async_collection.find_one({"session_id": id})
+
+        if result:
+            return MongoDBMemory(self.async_collection, self.sync_collection, id)

@@ -23,7 +23,7 @@ Lightweight and extensible memory layer for LLMs.
 
 From pypi
 ```bash
-pip install memx-lm
+pip install memx-ai
 ```
 Or clone the repo and install it 
 ```bash
@@ -42,7 +42,8 @@ from openai import OpenAI
 from memx.memory.sqlite import SQLiteMemory
 
 sqlite_uri = "sqlite+aiosqlite:///message-storage.db"
-m1 = SQLiteMemory(sqlite_uri, "memx-messages")
+engine = SQLiteEngine(sqlite_uri, "memx-messages", start_up=True)
+m1 = engine.create_session()  # create a new session
 
 client = OpenAI()
 
@@ -73,38 +74,25 @@ print(f"\n\n{second_response.output_text}")
 print(m1.sync.get())
 ```
 ### Pydantic AI
-Message history with async [Pydantic AI](https://ai.pydantic.dev/) + [Gemini](https://ai.google.dev/gemini-api/docs)
+Message history with async [Pydantic AI](https://ai.pydantic.dev/) + OpenAI
+
 ```Python
-import asyncio
-import os
-
-import orjson
-from memx.memory.sqlite import SQLiteMemory
-from pydantic_ai import Agent, ModelMessagesTypeAdapter
-from pydantic_ai.models.google import GoogleModel
-from pydantic_ai.providers.google import GoogleProvider
-
 # Reference: https://ai.pydantic.dev/message-history/
 
-# Initialize the GoogleProvider for Vertex AI
-PROJECT = os.getenv("GCP_PROJECT_ID")
-LOCATION = os.getenv("GCP_LOCATION")
+import asyncio
 
-provider = GoogleProvider(
-    vertexai=True, project=PROJECT, location=LOCATION
-)
+import orjson
+from pydantic_ai import Agent, ModelMessagesTypeAdapter
 
-model = GoogleModel(
-    model_name="gemini-2.0-flash",
-    provider=provider,
-)
+from memx.engine.sqlite import SQLiteEngine
 
-agent = Agent(model)
+agent = Agent("openai:gpt-4o-mini")
 
 
 async def main():
     sqlite_uri = "sqlite+aiosqlite:///message_store.db"
-    m1 = SQLiteMemory(sqlite_uri, "my-messages")
+    engine = SQLiteEngine(sqlite_uri, "memx-messages", start_up=True)
+    m1 = engine.create_session()  # create a new session
 
     result1 = await agent.run('Where does "hello world" come from?')
 
@@ -117,7 +105,7 @@ async def main():
     print("Messages added with session_id: ", session_id)
 
     # resume the conversation from 'another' memory
-    m2 = SQLiteMemory(sqlite_uri, "my-messages", session_id=session_id)
+    m2 = await engine.get_session(session_id)
     old_messages = ModelMessagesTypeAdapter.validate_python(await m2.get())
 
     print("Past messages:\n", old_messages)
@@ -131,6 +119,7 @@ async def main():
 if __name__ == "__main__":
     asyncio.run(main())
 
+
 ```
 
 You can change the memory backend with minimal modifications. Same api to add and get messages.
@@ -141,17 +130,22 @@ from memx.memory.sqlite import SQLiteMemory
 
 # SQLite backend
 sqlite_uri = "sqlite+aiosqlite:///message_store.db"
-m1 = SQLiteMemory(sqlite_uri, "my-messages")
+e1 = SQLiteMemory(sqlite_uri, "memx-messages", start_up=True)
+m1 = e1.create_session() # memory session ready to go
 
 # PostgreSQL backend
 pg_uri = "postgresql+psycopg://admin:1234@localhost:5433/test-database"
-m2 = PostgresMemory(pg_uri, "memx-messages")
+e2 = PostgresMemory(pg_uri, "memx-messages", start_up=True)
+m2 = e2.create_session()
 
 # MongoDB backend
 mongodb_uri = "mongodb://admin:1234@localhost:27017"
-m3 = MongoDBMemory(uri=mongodb_uri, database="memx-test", collection="memx-messages")
+e3 = MongoDBMemory(uri=mongodb_uri, database="memx-test", "memx-messages")
+m3 = e3.create_session()
 
 ```
+
+[More examples...](examples/)
 
 ## Tasks
 - [x] Add mongodb backend
@@ -159,6 +153,6 @@ m3 = MongoDBMemory(uri=mongodb_uri, database="memx-test", collection="memx-messa
 - [x] Add Postgres backend
 - [ ] Add redis backend
 - [ ] Add tests
-- [ ] Publish on pypi
+- [x] Publish on pypi
 - [ ] Add full sync support
 - [ ] Add docstrings

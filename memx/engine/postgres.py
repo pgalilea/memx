@@ -52,7 +52,7 @@ class PostgresEngine(BaseEngine):
         if start_up:
             self.start_up()  # blocking operation
 
-    def get_session(self, session_id: str = None) -> PostgresMemory:
+    def create_session(self) -> PostgresMemory:
         """Get or create a memory session."""
 
         engine_config = SQLEngineConfig(
@@ -60,7 +60,26 @@ class PostgresEngine(BaseEngine):
             add_query=self.add_sql,
             get_query=self.get_sql,
         )
-        return PostgresMemory(self.AsyncSession, self.SyncSession, engine_config, session_id)
+        return PostgresMemory(self.AsyncSession, self.SyncSession, engine_config)
+
+    async def get_session(self, id: str) -> PostgresMemory | None:
+        """Get a memory session."""
+
+        async with self.AsyncSession() as session:
+            result = (
+                await session.execute(
+                    text(self.get_session_sql),
+                    {"session_id": id},
+                )
+            ).first()
+
+        if result[0] == 1:  # type: ignore
+            engine_config = SQLEngineConfig(
+                table=self.table_name,
+                add_query=self.add_sql,
+                get_query=self.get_sql,
+            )
+            return PostgresMemory(self.AsyncSession, self.SyncSession, engine_config, id)
 
     def init_queries(self):
         """."""
@@ -86,6 +105,13 @@ class PostgresEngine(BaseEngine):
         self.get_sql = dedent(f"""
             SELECT * FROM {self.table_name}
             WHERE session_id = :session_id;
+        """)
+
+        self.get_session_sql = dedent(f"""
+            SELECT EXISTS(
+                SELECT 1 FROM {self.table_name}
+                WHERE session_id=:session_id
+            ) as r;
         """)
 
     def start_up(self):
