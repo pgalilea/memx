@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from memx.engine import BaseEngine
 from memx.memory.postgres import PostgresMemory
 from memx.models.sql import SQLEngineConfig
+from memx.services import sql_service
 
 
 class PostgresEngine(BaseEngine):
@@ -64,22 +65,10 @@ class PostgresEngine(BaseEngine):
     async def get_session(self, id: str) -> PostgresMemory | None:
         """Get a memory session."""
 
-        # TODO: refactor this with sqlite
-        async with self.AsyncSession() as session:
-            result = (
-                await session.execute(
-                    text(self.get_session_sql),
-                    {"session_id": id},
-                )
-            ).first()
-
-        if result[0] == 1:  # type: ignore
-            engine_config = SQLEngineConfig(
-                table=self.table_name,
-                add_query=self.add_sql,
-                get_query=self.get_sql,
-            )
+        if engine_config := await sql_service.get_session(self, id):
             return PostgresMemory(self.AsyncSession, self.SyncSession, engine_config, id)
+
+        return None  # explicit is better than implicit
 
     def init_queries(self):
         """."""
@@ -128,15 +117,8 @@ class _sync:
 
     def get_session(self, id: str) -> PostgresMemory | None:
         """Get a memory session."""
-        # TODO: refactor this with sqlite
 
-        with self.pe.SyncSession() as session:
-            result = session.execute(text(self.pe.get_session_sql), {"session_id": id}).first()
-
-        if result[0] == 1:  # type: ignore
-            engine_config = SQLEngineConfig(
-                table=self.pe.table_name,
-                add_query=self.pe.add_sql,
-                get_query=self.pe.get_sql,
-            )
+        if engine_config := sql_service.get_session_sync(self.pe, id):
             return PostgresMemory(self.pe.AsyncSession, self.pe.SyncSession, engine_config, id)
+
+        return None  # explicit is better than implicit

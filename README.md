@@ -35,7 +35,7 @@ Simple conversation using [OpenAI Python library](https://github.com/openai/open
 # tested on openai==2.6.1
 
 from openai import OpenAI
-from memx.memory.sqlite import SQLiteMemory
+from memx.engine.sqlite import SQLiteEngine
 
 sqlite_uri = "sqlite+aiosqlite:///message-storage.db"
 engine = SQLiteEngine(sqlite_uri, "memx-messages", start_up=True)
@@ -143,6 +143,11 @@ m3 = e3.create_session()
 
 [More examples...](examples/)
 
+## Tests
+```sh
+pytest tests -vs
+```
+
 ## Tasks
 - [x] Add mongodb backend
 - [x] Add SQLite backend
@@ -150,5 +155,5 @@ m3 = e3.create_session()
 - [ ] Add redis backend
 - [ ] Add tests
 - [x] Publish on pypi
-- [ ] Add full sync support
+- [x] Add full sync support
 - [ ] Add docstrings

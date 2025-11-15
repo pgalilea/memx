@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from memx.engine import BaseEngine
 from memx.memory.sqlite import SQLiteMemory
 from memx.models.sql import SQLEngineConfig
+from memx.services import sql_service
 
 
 class SQLiteEngine(BaseEngine):
@@ -55,21 +56,10 @@ class SQLiteEngine(BaseEngine):
     async def get_session(self, id: str) -> SQLiteMemory | None:
         """Get a memory session."""
 
-        async with self.AsyncSession() as session:
-            result = (
-                await session.execute(
-                    text(self.get_session_sql),
-                    {"session_id": id},
-                )
-            ).first()
-
-        if result[0] == 1:  # type: ignore
-            engine_config = SQLEngineConfig(
-                table=self.table_name,
-                add_query=self.add_sql,
-                get_query=self.get_sql,
-            )
+        if engine_config := await sql_service.get_session(self, id):
             return SQLiteMemory(self.AsyncSession, self.SyncSession, engine_config, id)
+
+        return None  # explicit is better than implicit
 
     def init_queries(self):
         """."""
@@ -115,13 +105,7 @@ class _sync:
     def get_session(self, id: str) -> SQLiteMemory | None:
         """Get a memory session."""
 
-        with self.pe.SyncSession() as session:
-            result = session.execute(text(self.pe.get_session_sql), {"session_id": id}).first()
-
-        if result[0] == 1:  # type: ignore
-            engine_config = SQLEngineConfig(
-                table=self.pe.table_name,
-                add_query=self.pe.add_sql,
-                get_query=self.pe.get_sql,
-            )
+        if engine_config := sql_service.get_session_sync(self.pe, id):
             return SQLiteMemory(self.pe.AsyncSession, self.pe.SyncSession, engine_config, id)
+
+        return None  # explicit is better than implicit
