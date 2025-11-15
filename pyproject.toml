@@ -21,17 +21,19 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "memx-ai[all]",
     "pytest>=8.4.2",
     "pytest-asyncio>=1.3.0",
+    "redis>=7.0.1",
     "ruff>=0.14.2",
 ]
 
 [project.optional-dependencies]
 all = [
-    "aiosqlite>=0.21.0",
-    "psycopg>=3.2.12",
-    "pymongo>=4.15.3",
-    "sqlalchemy[asyncio, postgresql-psycopg]>=2.0.44"
+    "memx-ai[sqlite]",
+    "memx-ai[postgres]",
+    "memx-ai[mongodb]",
+    "memx-ai[redis]"
 ]
 
 sqlite = [
@@ -46,6 +48,10 @@ postgres = [
 
 mongodb = [
     "pymongo>=4.15.3"
+]
+
+redis = [
+    "redis>=7.0.1"
 ]
 
 [tool.hatch.build.targets.wheel]

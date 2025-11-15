@@ -17,7 +17,7 @@ async def main():
 
     result1 = await agent.run('Where does "hello world" come from?')
 
-    # it is your responsibility to add the messages as a list[dict]
+    # it is your responsability to add the messages as a list[dict]
     messages = orjson.loads(result1.new_messages_json())
 
     await m1.add(messages)  # messages: list[dict] must be json serializable
