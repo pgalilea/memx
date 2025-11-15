@@ -120,23 +120,23 @@ if __name__ == "__main__":
 
 You can change the memory backend with minimal modifications. Same api to add and get messages.
 ```Python
-from memx.memory.mongodb import MongoDBMemory
-from memx.memory.postgres import PostgresMemory
-from memx.memory.sqlite import SQLiteMemory
+from memx.engine.mongodb import MongoDBEngine
+from memx.engine.postgres import PostgresEngine
+from memx.engine.sqlite import SQLiteEngine
 
 # SQLite backend
 sqlite_uri = "sqlite+aiosqlite:///message_store.db"
-e1 = SQLiteMemory(sqlite_uri, "memx-messages", start_up=True)
+e1 = SQLiteEngine(sqlite_uri, "memx-messages", start_up=True)
 m1 = e1.create_session() # memory session ready to go
 
 # PostgreSQL backend
 pg_uri = "postgresql+psycopg://admin:1234@localhost:5433/test-database"
-e2 = PostgresMemory(pg_uri, "memx-messages", start_up=True)
+e2 = PostgresEngine(pg_uri, "memx-messages", start_up=True)
 m2 = e2.create_session()
 
 # MongoDB backend
 mongodb_uri = "mongodb://admin:1234@localhost:27017"
-e3 = MongoDBMemory(uri=mongodb_uri, database="memx-test", "memx-messages")
+e3 = MongoDBEngine(mongodb_uri, "memx-test", "memx-messages")
 m3 = e3.create_session()
 
 ```
