@@ -1,9 +1,9 @@
 <p align="center">
-  <a href="https://github.com/pgalilea/memx"><img src="https://i.ibb.co/JjYq8fzW/memx.png" alt="memx - memory layer"></a>
+  <a href="https://github.com/pgalilea/memx"><img src="https://i.ibb.co/zWg5V867/memx.png" alt="memx - memory layer"></a>
 </p>
 
 <br/>
-Lightweight and extensible memory layer for LLMs.
+<p align="center">Lightweight and extensible memory layer for LLMs.</p>
 <br/><br/>
 
 **Important Disclaimer**: This library is intended to be production-ready, but currently is in active development. Fix the version and run your own tests :)
