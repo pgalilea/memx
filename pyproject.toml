@@ -16,6 +16,7 @@ authors = [
 dependencies = [
     "aiofiles>=25.1.0",
     "orjson>=3.11.4",
+    "typing-extensions>=4.15.0",
 ]
 
 [dependency-groups]

@@ -6,8 +6,8 @@ from sqlalchemy import Result, text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.orm import Session, sessionmaker
 
-from memx.engine.config import SQLEngineConfig
 from memx.memory import BaseMemory
+from memx.models.sql import SQLEngineConfig
 
 
 class SQLiteMemory(BaseMemory):
@@ -54,7 +54,7 @@ class SQLiteMemory(BaseMemory):
         pass
 
     def _format_messages(self, messages: list[dict]) -> dict:
-        ts_now = datetime.now(UTC)
+        ts_now = datetime.now(UTC).isoformat()
         data = {
             "session_id": self._session_id,
             "message": orjson.dumps(messages).decode("utf-8"),

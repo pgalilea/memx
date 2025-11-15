@@ -4,10 +4,12 @@ from pathlib import Path
 from uuid import uuid4
 
 import aiofiles
+from typing_extensions import deprecated
 
 from memx.memory import BaseMemory
 
 
+@deprecated("Use SQLiteMemory instead")
 class DiskMemory(BaseMemory):
     def __init__(self, session_id: str = None, dir: str = None):
         file_id = session_id if session_id else str(uuid4())
@@ -29,9 +31,7 @@ class DiskMemory(BaseMemory):
         async with aiofiles.open(self.file_path, "rb") as f:
             pickled_data = await f.read()
 
-        stored_messages: list[dict] = await asyncio.to_thread(
-            pickle.loads, pickled_data
-        )
+        stored_messages: list[dict] = await asyncio.to_thread(pickle.loads, pickled_data)
 
         # extend the messages
         stored_messages.extend(messages)
@@ -48,9 +48,7 @@ class DiskMemory(BaseMemory):
         async with aiofiles.open(self.file_path, "rb") as f:
             pickled_data = await f.read()
 
-        stored_messages: list[dict] = await asyncio.to_thread(
-            pickle.loads, pickled_data
-        )
+        stored_messages: list[dict] = await asyncio.to_thread(pickle.loads, pickled_data)
 
         return stored_messages
 
@@ -75,6 +73,7 @@ class _sync(BaseMemory):
         return stored_messages
 
 
+@deprecated("Use SQLiteMemory with :memory: URI instead")
 class InMemory(BaseMemory):
     # TODO: add .sync just for consistency
     def __init__(self, session_id: str = None):

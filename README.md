@@ -21,19 +21,15 @@ Lightweight and extensible memory layer for LLMs.
 
 ## ⚙️ Installation
 
-From pypi
+From pypi:
 ```bash
 pip install memx-ai
-```
-Or clone the repo and install it 
-```bash
-pip install . 
 ```
 
 ## 🚀 Quickstart
 
 ### OpenAI
-Simple conversation with [OpenAI Python library](https://github.com/openai/openai-python)
+Simple conversation using [OpenAI Python library](https://github.com/openai/openai-python)
 ```Python
 # https://platform.openai.com/docs/guides/conversation-state?api-mode=responses
 # tested on openai==2.6.1

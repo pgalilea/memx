@@ -5,8 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy.orm import Session, sessionmaker
 
 from memx.engine import BaseEngine
-from memx.engine.config import SQLEngineConfig
 from memx.memory.sqlite import SQLiteMemory
+from memx.models.sql import SQLEngineConfig
 
 
 class SQLiteEngine(BaseEngine):

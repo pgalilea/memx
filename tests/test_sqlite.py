@@ -12,12 +12,12 @@ def test_engine_init():
     assert engine.sync_engine is not None
     assert engine.AsyncSession is not None
     assert engine.SyncSession is not None
-    assert engine.add_sql is not None
-    assert engine.get_sql is not None
-    assert engine.get_session_sql is not None
+    assert isinstance(engine.add_sql, str)
+    assert isinstance(engine.get_sql, str)
+    assert isinstance(engine.get_session_sql, str)
 
 
-def test_same_engine_attributes():
+def test_same_session_attributes():
     sqlite_uri = "sqlite+aiosqlite:///:memory:"
     engine1 = SQLiteEngine(sqlite_uri, "test-messages", start_up=True)
     m1 = engine1.create_session()

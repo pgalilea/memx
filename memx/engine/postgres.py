@@ -1,15 +1,12 @@
-from datetime import UTC, datetime
 from textwrap import dedent
-from uuid import uuid4
 
-import orjson
 from sqlalchemy import create_engine, text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from memx.engine import BaseEngine
-from memx.engine.config import SQLEngineConfig
 from memx.memory.postgres import PostgresMemory
+from memx.models.sql import SQLEngineConfig
 
 
 class PostgresEngine(BaseEngine):
@@ -67,6 +64,7 @@ class PostgresEngine(BaseEngine):
     async def get_session(self, id: str) -> PostgresMemory | None:
         """Get a memory session."""
 
+        # TODO: refactor this with sqlite
         async with self.AsyncSession() as session:
             result = (
                 await session.execute(
@@ -133,12 +131,7 @@ class _sync:
         # TODO: refactor this with sqlite
 
         with self.pe.SyncSession() as session:
-            result = (
-                session.execute(
-                    text(self.pe.get_session_sql),
-                    {"session_id": id},
-                )
-            ).first()
+            result = session.execute(text(self.pe.get_session_sql), {"session_id": id}).first()
 
         if result[0] == 1:  # type: ignore
             engine_config = SQLEngineConfig(

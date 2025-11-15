@@ -6,8 +6,8 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.orm import Session, sessionmaker
 
-from memx.engine.config import SQLEngineConfig
 from memx.memory import BaseMemory
+from memx.models.sql import SQLEngineConfig
 
 
 class PostgresMemory(BaseMemory):
