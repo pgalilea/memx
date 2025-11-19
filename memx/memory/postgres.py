@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from memx.memory import BaseMemory
 from memx.models.sql import SQLEngineConfig
+from memx.utils import JSON
 
 
 class PostgresMemory(BaseMemory):
@@ -30,7 +31,7 @@ class PostgresMemory(BaseMemory):
         else:
             self._session_id = str(uuid4())
 
-    async def add(self, messages: list[dict]):
+    async def add(self, messages: list[JSON]):
         # TODO: refactor this with sqlite
         await self._pre_add()
 
@@ -45,7 +46,7 @@ class PostgresMemory(BaseMemory):
             await session.execute(text(self.engine_config.add_query), data)
             await session.commit()
 
-    async def get(self) -> list[dict]:
+    async def get(self) -> list[JSON]:
         async with self.AsyncSession() as session:
             result = await session.execute(
                 text(self.engine_config.get_query),
@@ -65,7 +66,7 @@ class _sync(BaseMemory):
     def __init__(self, parent: "PostgresMemory"):
         self.pm = parent  # parent memory (?)
 
-    def add(self, messages: list[dict]):
+    def add(self, messages: list[JSON]):
         # TODO: refactor this with sqlite
 
         self._pre_add()
@@ -81,7 +82,7 @@ class _sync(BaseMemory):
             session.execute(text(self.pm.engine_config.add_query), data)
             session.commit()
 
-    def get(self) -> list[dict]:
+    def get(self) -> list[JSON]:
         with self.pm.SyncSession() as session:
             result = session.execute(
                 text(self.pm.engine_config.get_query),

@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from memx.memory import BaseMemory
 from memx.models.sql import SQLEngineConfig
+from memx.utils import JSON
 
 
 class SQLiteMemory(BaseMemory):
@@ -30,7 +31,7 @@ class SQLiteMemory(BaseMemory):
         else:
             self._session_id = str(uuid4())
 
-    async def add(self, messages: list[dict]):
+    async def add(self, messages: list[JSON]):
         await self._pre_add()
 
         data = self._format_messages(messages)
@@ -39,7 +40,7 @@ class SQLiteMemory(BaseMemory):
             await session.execute(text(self.engine_config.add_query), data)
             await session.commit()
 
-    async def get(self) -> list[dict]:
+    async def get(self) -> list[JSON]:
         async with self.AsyncSession() as session:
             result = await session.execute(
                 text(self.engine_config.get_query),
@@ -53,7 +54,7 @@ class SQLiteMemory(BaseMemory):
     async def _pre_add(self):
         pass
 
-    def _format_messages(self, messages: list[dict]) -> dict:
+    def _format_messages(self, messages: list[JSON]) -> dict:
         ts_now = datetime.now(UTC).isoformat()
         data = {
             "session_id": self._session_id,
@@ -68,7 +69,7 @@ class _sync(BaseMemory):
     def __init__(self, parent: "SQLiteMemory"):
         self.pm = parent  # parent memory (?)
 
-    def add(self, messages: list[dict]):
+    def add(self, messages: list[JSON]):
         self._pre_add()
 
         data = self.pm._format_messages(messages)
@@ -77,7 +78,7 @@ class _sync(BaseMemory):
             session.execute(text(self.pm.engine_config.add_query), data)
             session.commit()
 
-    def get(self) -> list[dict]:
+    def get(self) -> list[JSON]:
         with self.pm.SyncSession() as session:
             result = session.execute(
                 text(self.pm.engine_config.get_query),
@@ -86,14 +87,14 @@ class _sync(BaseMemory):
 
         messages = _merge_messages(result)
 
-        return messages
+        return messages  # type: ignore
 
     def _pre_add(self):
         pass
 
 
-def _merge_messages(msg_result: Result) -> list[dict]:
-    """."""
+def _merge_messages(msg_result: Result) -> list[JSON]:
+    """Merge messages from the result of the query."""
 
     # list.extend is the fastest approach
     result = [dict(row._mapping) for row in msg_result.fetchall()]

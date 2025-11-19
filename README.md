@@ -6,17 +6,18 @@
 <p align="center">Lightweight and extensible memory layer for LLMs.</p>
 <br/><br/>
 
-**Important Disclaimer**: This library is intended to be production-ready, but currently is in active development. Fix the version and run your own tests :)
+**Important Disclaimer**: This library is intended to be production-ready, but currently is in active development. Fix the package version and run your own tests :)
 
 
 ##  🔥 Key Features
 - **Framework agnostic**: Use your preferred AI agent framework.
-- **Own infrastructure**: Use your preferred cloud provider. No third-party api keys; your data, your rules.
-- **Multiple backends**: Move from your local *POC* to production deployment, seamlessly (SQLite, MongoDB, PostgreSQL).
+- **No vendor lock-in**: Use your preferred cloud provider or infrastructure. No third-party api keys; your data, your rules.
+- **Multiple backends**: Seamlessly move from your local *POC* to production deployment (SQLite, MongoDB, PostgreSQL).
 - **Sync and async api**: Highly compatible with modern and *legacy* frameworks. 
 - **No forced schema**: As long it is a list of json serializable objects.
-- **Resumable memory**: Perfect for chat applications and REST APIs
+- **Resumable memory**: Perfect for chat applications and REST APIs.
 - **Robust**: Get production-ready code with minimal effort.
+- **No esoteric patching**: <abbr title="What you see is what you get">WYSIWYG</abbr>, extensible as a sidecar. It doesn´t touch your libraries under the hood.
 
 
 ## ⚙️ Installation

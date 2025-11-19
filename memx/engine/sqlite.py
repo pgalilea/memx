@@ -12,10 +12,16 @@ from memx.services import sql_service
 
 class SQLiteEngine(BaseEngine):
     def __init__(self, uri: str, table: str, start_up: bool = False):
-        """SQLite memory engine."""
+        """Initialize SQLite engine for memory storage.
+
+        Args:
+            uri: Database connection URI for SQLite.
+            table: Name of the table to use for storing memories.
+            start_up: If True, create the table if it doesn't exist (blocking operation).
+        """
 
         self.table_name = f"'{table.strip()}'"
-        self.init_queries()
+        self._init_queries()
 
         self.async_engine = create_async_engine(uri, echo=False, future=True)
         self.AsyncSession = async_sessionmaker(
@@ -61,7 +67,7 @@ class SQLiteEngine(BaseEngine):
 
         return None  # explicit is better than implicit
 
-    def init_queries(self):
+    def _init_queries(self):
         """."""
 
         self.table_sql = dedent(f"""

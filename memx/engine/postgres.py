@@ -12,10 +12,17 @@ from memx.services import sql_service
 
 class PostgresEngine(BaseEngine):
     def __init__(self, uri: str, table: str, schema: str = "public", start_up: bool = None):
-        """."""
+        """Initialize PostgreSQL engine for memory storage.
+
+        Args:
+            uri: Database connection URI for PostgreSQL (must use 'postgresql+psycopg' driver).
+            table: Name of the table to use for storing memories.
+            schema: Database schema name (defaults to 'public').
+            start_up: If True, create the table if it doesn't exist (blocking operation).
+        """
 
         self.table_name = f'"{table.strip()}"'
-        self.init_queries()
+        self._init_queries()
 
         driver, _ = uri.split(":", 1)
         if driver.strip() != "postgresql+psycopg":
@@ -70,7 +77,7 @@ class PostgresEngine(BaseEngine):
 
         return None  # explicit is better than implicit
 
-    def init_queries(self):
+    def _init_queries(self):
         """."""
 
         self.table_sql = dedent(f"""

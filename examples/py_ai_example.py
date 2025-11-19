@@ -27,7 +27,7 @@ async def main():
 
     # resume the conversation from 'another' memory
     m2 = await engine.get_session(session_id)
-    old_messages = ModelMessagesTypeAdapter.validate_python(await m2.get())
+    old_messages = ModelMessagesTypeAdapter.validate_python(await m2.get())  # type: ignore
 
     print("Past messages:\n", old_messages)
 

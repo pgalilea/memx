@@ -22,6 +22,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "memx-ai[all]",
+    "psycopg[binary]>=3.2.12",
     "pytest>=8.4.2",
     "pytest-asyncio>=1.3.0",
     "redis>=7.0.1",
