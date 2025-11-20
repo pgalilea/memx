@@ -49,6 +49,7 @@ def test_resume_session():
     sqlite_uri = "sqlite+aiosqlite:///:memory:"
     engine = SQLiteEngine(sqlite_uri, "test-messages", start_up=True)
     m1 = engine.create_session()
+    session_id = m1.get_id()
 
     messages = [{"role": "user", "content": "Hello, how are you?"}]
     m1.sync.add(messages)
@@ -60,6 +61,7 @@ def test_resume_session():
     assert m2.sync.get() == messages  # type: ignore
     assert m1.sync.get() == m2.sync.get()  # type: ignore
     assert engine.sync.get_session("asdf") is None
+    assert m1.get_id() == session_id == m2.get_id()  # type: ignore
 
 
 async def test_simple_add_async():

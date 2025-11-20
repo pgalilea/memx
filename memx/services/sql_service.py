@@ -1,8 +1,11 @@
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Union
 
+import orjson
 from sqlalchemy import text
 
 from memx.models.sql import SQLEngineConfig
+from memx.utils import JSON
 
 if TYPE_CHECKING:
     from memx.engine.postgres import PostgresEngine
@@ -46,3 +49,16 @@ def get_session_sync(
             get_query=sql_engine.get_sql,
         )
         return engine_config
+
+
+def format_messages(session_id: str, messages: list[JSON]) -> dict:
+    """."""
+
+    ts_now = datetime.now(UTC).isoformat()
+    data = {
+        "session_id": session_id,
+        "message": orjson.dumps(messages).decode("utf-8"),
+        "created_at": ts_now,
+    }
+
+    return data

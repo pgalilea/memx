@@ -1,4 +1,3 @@
-from datetime import UTC, datetime
 from uuid import uuid4
 
 import orjson
@@ -8,6 +7,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from memx.memory import BaseMemory
 from memx.models.sql import SQLEngineConfig
+from memx.services import sql_service
 from memx.utils import JSON
 
 
@@ -34,7 +34,7 @@ class SQLiteMemory(BaseMemory):
     async def add(self, messages: list[JSON]):
         await self._pre_add()
 
-        data = self._format_messages(messages)
+        data = sql_service.format_messages(self._session_id, messages)
 
         async with self.AsyncSession() as session:
             await session.execute(text(self.engine_config.add_query), data)
@@ -54,16 +54,6 @@ class SQLiteMemory(BaseMemory):
     async def _pre_add(self):
         pass
 
-    def _format_messages(self, messages: list[JSON]) -> dict:
-        ts_now = datetime.now(UTC).isoformat()
-        data = {
-            "session_id": self._session_id,
-            "message": orjson.dumps(messages).decode("utf-8"),
-            "created_at": ts_now,
-        }
-
-        return data
-
 
 class _sync(BaseMemory):
     def __init__(self, parent: "SQLiteMemory"):
@@ -72,7 +62,7 @@ class _sync(BaseMemory):
     def add(self, messages: list[JSON]):
         self._pre_add()
 
-        data = self.pm._format_messages(messages)
+        data = sql_service.format_messages(self.pm._session_id, messages)
 
         with self.pm.SyncSession() as session:
             session.execute(text(self.pm.engine_config.add_query), data)

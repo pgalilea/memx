@@ -5,7 +5,7 @@ from memx.engine.postgres import PostgresEngine
 from memx.engine.sqlite import SQLiteEngine
 
 
-def test_flow_sync(engine):
+def test_flow_sync(engine: SQLiteEngine | PostgresEngine | MongoDBEngine):
     m1 = engine.create_session()  # create a new session
     m1.sync.add([{"role": "user", "content": "Hello, how are you?"}])
     m1.sync.add([{"role": "agent", "content": "Fine, thanks for asking"}])
@@ -21,7 +21,7 @@ def test_flow_sync(engine):
     print(engine.sync.get_session(id=session_id).sync.get())
 
 
-async def test_flow_async(engine):
+async def test_flow_async(engine: SQLiteEngine | PostgresEngine | MongoDBEngine):
     m1 = engine.create_session()  # create a new session
     await m1.add([{"role": "user", "content": "Hello, how are you?"}])
     await m1.add([{"role": "agent", "content": "Fine, thanks for asking"}])

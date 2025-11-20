@@ -17,7 +17,7 @@
 - **No forced schema**: As long it is a list of json serializable objects.
 - **Resumable memory**: Perfect for chat applications and REST APIs.
 - **Robust**: Get production-ready code with minimal effort.
-- **No esoteric patching**: <abbr title="What you see is what you get">WYSIWYG</abbr>, extensible as a sidecar. It doesn´t touch your libraries under the hood.
+- **No esoteric patching**: <abbr title="What you see is what you get">WYSIWYG</abbr>. Act as a sidecar for your framework without touching your libraries under the hood.
 
 
 ## ⚙️ Installation
