@@ -25,8 +25,7 @@ async def main():
     session_id = m1.get_id()
     print("Messages added with session_id: ", session_id)
 
-    # resume the conversation from 'another' memory
-    m2 = await engine.get_session(session_id)
+    m2 = await engine.get_session(session_id)  # resume the conversation from 'another' memory
     old_messages = ModelMessagesTypeAdapter.validate_python(await m2.get())  # type: ignore
 
     print("Past messages:\n", old_messages)
