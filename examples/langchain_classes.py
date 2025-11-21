@@ -32,8 +32,9 @@ message_history = messages_from_dict(
 
 new_msg = HumanMessage("Good one! any other jokes?")
 m2.sync.add([new_msg.model_dump(mode="json")])  # type: ignore
+message_history.append(new_msg)
 
-response = model.invoke(messages)  # Returns AIMessage
+response = model.invoke(message_history)  # Returns AIMessage
 print("Second response:\n", response)
 m2.sync.add([response.model_dump(mode="json")])  # type: ignore
 m2.sync.get()  # type: ignore
