@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING, Union
 import orjson
 from sqlalchemy import text
 
+from memx.models import JSON
 from memx.models.sql import SQLEngineConfig
-from memx.utils import JSON
 
 if TYPE_CHECKING:
     from memx.engine.postgres import PostgresEngine
@@ -59,6 +59,7 @@ def format_messages(session_id: str, messages: list[JSON]) -> dict:
         "session_id": session_id,
         "message": orjson.dumps(messages).decode("utf-8"),
         "created_at": ts_now,
+        "updated_at": ts_now,
     }
 
     return data

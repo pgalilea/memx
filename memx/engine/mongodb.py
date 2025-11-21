@@ -40,7 +40,7 @@ class _sync:
     def get_session(self, id: str) -> MongoDBMemory | None:
         """Get a memory session."""
 
-        result = self.pe.sync_collection.find_one({"session_id": id})
+        result = self.pe.sync_collection.find_one({"session_id": id}, {"_id": 1})
 
         if result:
             return MongoDBMemory(self.pe.async_collection, self.pe.sync_collection, id)

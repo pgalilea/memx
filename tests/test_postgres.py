@@ -48,7 +48,6 @@ def test_engine_init(
         mock_sessionmaker.assert_called_once()
 
 
-@pytest.mark.asyncio
 @patch("memx.engine.postgres.create_async_engine")
 @patch("memx.engine.postgres.create_engine")
 @patch("memx.engine.postgres.async_sessionmaker")

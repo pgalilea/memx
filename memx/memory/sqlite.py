@@ -6,9 +6,9 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.orm import Session, sessionmaker
 
 from memx.memory import BaseMemory
+from memx.models import JSON
 from memx.models.sql import SQLEngineConfig
 from memx.services import sql_service
-from memx.utils import JSON
 
 
 class SQLiteMemory(BaseMemory):

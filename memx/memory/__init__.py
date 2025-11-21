@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from memx.utils import JSON
+from memx.models import JSON
 
 
 class BaseMemory(ABC):
