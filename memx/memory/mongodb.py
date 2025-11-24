@@ -44,6 +44,8 @@ class MongoDBMemory(BaseMemory):
 
 
 class _sync(BaseMemory):
+    """Sync methods for MongoDBMemory."""
+
     def __init__(self, parent: "MongoDBMemory"):
         self.pm = parent  # parent memory (?)
 

@@ -11,7 +11,7 @@ from memx.services import sql_service
 
 
 class PostgresEngine(BaseEngine):
-    def __init__(self, uri: str, table: str, schema: str = "public", start_up: bool = None):
+    def __init__(self, uri: str, table: str, schema: str = "public", start_up: bool = False):
         """Initialize PostgreSQL engine for memory storage.
 
         Args:

@@ -34,13 +34,13 @@ class MongoDBEngine(BaseEngine):
 
 
 class _sync:
+    """Sync methods for MongoDBEngine."""
+
     def __init__(self, parent: "MongoDBEngine"):
         self.pe = parent
 
     def get_session(self, id: str) -> MongoDBMemory | None:
         """Get a memory session."""
 
-        result = self.pe.sync_collection.find_one({"session_id": id}, {"_id": 1})
-
-        if result:
+        if self.pe.sync_collection.find_one({"session_id": id}, {"_id": 1}) is not None:
             return MongoDBMemory(self.pe.async_collection, self.pe.sync_collection, id)
