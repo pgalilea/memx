@@ -2,10 +2,11 @@ import asyncio
 
 from memx.engine.mongodb import MongoDBEngine
 from memx.engine.postgres import PostgresEngine
+from memx.engine.redis import RedisEngine
 from memx.engine.sqlite import SQLiteEngine
 
 
-def test_flow_sync(engine: SQLiteEngine | PostgresEngine | MongoDBEngine):
+def test_flow_sync(engine: SQLiteEngine | PostgresEngine | MongoDBEngine | RedisEngine):
     m1 = engine.create_session()  # create a new session
     m1.sync.add([{"role": "user", "content": "Hello, how are you?"}])
     m1.sync.add([{"role": "agent", "content": "Fine, thanks for asking"}])
@@ -21,7 +22,7 @@ def test_flow_sync(engine: SQLiteEngine | PostgresEngine | MongoDBEngine):
     print(engine.sync.get_session(id=session_id).sync.get())
 
 
-async def test_flow_async(engine: SQLiteEngine | PostgresEngine | MongoDBEngine):
+async def test_flow_async(engine: SQLiteEngine | PostgresEngine | MongoDBEngine | RedisEngine):
     m1 = engine.create_session()  # create a new session
     await m1.add([{"role": "user", "content": "Hello, how are you?"}])
     await m1.add([{"role": "agent", "content": "Fine, thanks for asking"}])
@@ -56,6 +57,13 @@ async def amain():
 
     await test_flow_async(engine1)
 
+    print("\n======== Redis backend ========")
+    # https://github.com/redis/redis-py/issues/3431
+    redis_uri = "redis://default:1234@localhost:6379/0"
+    engine1 = RedisEngine(redis_uri, start_up=True)
+
+    await test_flow_async(engine1)
+
 
 def main():
     print("\n======== SQLite backend ========")
@@ -73,6 +81,12 @@ def main():
     print("\n======== MongoDB backend ========")
     mongodb_uri = "mongodb://admin:1234@localhost:27017"
     engine1 = MongoDBEngine(mongodb_uri, "memx-test", "memx-messages")
+
+    test_flow_sync(engine1)
+
+    print("\n======== Redis backend ========")
+    redis_uri = "redis://default:1234@localhost:6379/0"
+    engine1 = RedisEngine(redis_uri, start_up=True)
 
     test_flow_sync(engine1)
 

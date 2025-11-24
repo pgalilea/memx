@@ -5,15 +5,21 @@ import redis
 from redis.commands.json.path import Path
 
 from memx.memory import BaseMemory
-from memx.models import JSON
+from memx.models import JSON, RedisEngineConfig
 
 
 class RedisMemory(BaseMemory):
     def __init__(
-        self, async_client: redis.asyncio.Redis, sync_client: redis.Redis, session_id: str = None
+        self,
+        async_client: redis.asyncio.Redis,  # type: ignore
+        sync_client: redis.Redis,
+        engine_config: RedisEngineConfig,
+        session_id: str = None,
     ):
         self.async_client = async_client
         self.sync_client = sync_client
+
+        self.engine_config = engine_config
 
         self.sync = _sync(self)  # to group sync methods
 
@@ -22,10 +28,7 @@ class RedisMemory(BaseMemory):
         else:
             self._session_id = str(uuid4())
 
-        self.key = (
-            f"memx:session:{self._session_id}"  # TODO: slice the session_id to avoid long keys (?)
-        )
-        self.array_path = Path(".messages")
+        self.key = f"{self.engine_config.prefix}{self._session_id}"  # TODO: slice the session_id to avoid long keys (?)
 
     async def add(self, messages: list[JSON]):
         ts_now = datetime.now(UTC).isoformat()
@@ -40,12 +43,14 @@ class RedisMemory(BaseMemory):
         if (await self.async_client.exists(self.key)) == 0:  # does not exist, create it
             await self.async_client.json().set(self.key, Path.root_path(), data)  # type: ignore
         else:
-            # TODO: to transaction
-            await self.async_client.json().arrappend(self.key, self.array_path, *messages)  # type: ignore
+            # TODO: merge ops in a transaction
+            await self.async_client.json().arrappend(
+                self.key, self.engine_config.array_path, *messages
+            )  # type: ignore
             await self.async_client.json().set(self.key, Path(".updated_at"), ts_now)  # type: ignore
 
     async def get(self) -> list[JSON]:
-        messages = await self.async_client.json().get(self.key, self.array_path)  # type: ignore
+        messages = await self.async_client.json().get(self.key, self.engine_config.array_path)  # type: ignore
         return messages or []
 
 
@@ -67,9 +72,11 @@ class _sync(BaseMemory):
             self.pm.sync_client.json().set(self.pm.key, Path.root_path(), data)  # type: ignore
         else:
             # TODO: to transaction
-            self.pm.sync_client.json().arrappend(self.pm.key, self.pm.array_path, *messages)  # type: ignore
+            self.pm.sync_client.json().arrappend(
+                self.pm.key, self.pm.engine_config.array_path, *messages
+            )  # type: ignore
             self.pm.sync_client.json().set(self.pm.key, Path(".updated_at"), ts_now)  # type: ignore
 
     def get(self) -> list[JSON]:
-        messages = self.pm.sync_client.json().get(self.pm.key, self.pm.array_path)  # type: ignore
+        messages = self.pm.sync_client.json().get(self.pm.key, self.pm.engine_config.array_path)  # type: ignore
         return messages or []  # type: ignore
