@@ -1,3 +1,4 @@
+from inspect import iscoroutinefunction
 from uuid import uuid4
 
 from memx.engine.redis import RedisEngine
@@ -10,6 +11,7 @@ def test_engine_init(redis_uri: str):
     assert engine.engine_config is not None
     assert engine.sync is not None
     assert callable(engine.sync.get_session)
+    assert iscoroutinefunction(engine.get_session)
 
 
 async def test_simple_add_async(redis_uri: str):

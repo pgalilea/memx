@@ -1,4 +1,5 @@
 import tempfile
+from inspect import iscoroutinefunction
 from pathlib import Path
 
 from memx.engine.sqlite import SQLiteEngine
@@ -12,6 +13,8 @@ def test_engine_init():
     assert engine.sync_engine is not None
     assert engine.AsyncSession is not None
     assert engine.SyncSession is not None
+    assert callable(engine.sync.get_session)
+    assert iscoroutinefunction(engine.get_session)
     assert isinstance(engine.add_sql, str)
     assert isinstance(engine.get_sql, str)
     assert isinstance(engine.get_session_sql, str)

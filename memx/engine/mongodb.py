@@ -9,16 +9,16 @@ class MongoDBEngine(BaseEngine):
     def __init__(self, uri: str, database: str, collection: str):
         """MongoDB memory engine."""
 
-        self.client = MongoClient(uri)
+        self.sync_client = MongoClient(uri)
         self.async_client = AsyncMongoClient(
             uri,
             server_api=ServerApi(version="1", strict=True, deprecation_errors=True),
         )
 
-        self.db = self.client[database]
+        self.sync_db = self.sync_client[database]
         self.async_db = self.async_client.get_database(database)
 
-        self.sync_collection = self.db[collection]
+        self.sync_collection = self.sync_db[collection]
         self.async_collection = self.async_db[collection]
 
         self.sync = _sync(self)

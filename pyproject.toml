@@ -93,5 +93,5 @@ reportArgumentType = false
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 filterwarnings = [
-  "ignore:The @wait_container_is_ready decorator is deprecated:DeprecationWarning:testcontainers",
+  "ignore:The @wait_container_is_ready decorator is deprecated:DeprecationWarning:testcontainers", # redis tests
 ]

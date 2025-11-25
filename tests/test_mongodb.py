@@ -1,26 +1,26 @@
 from inspect import iscoroutinefunction
 from uuid import uuid4
 
-from memx.engine.postgres import PostgresEngine
+import pytest
+
+from memx.engine.mongodb import MongoDBEngine
+from tests.conftest import MongoDBConnection
+
+# Ignore deprecation warning from testcontainers
+pytestmark = pytest.mark.filterwarnings("ignore:The wait_for_logs function.*:DeprecationWarning")
 
 
-def test_engine_init(postgres_uri: str):
-    engine = PostgresEngine(postgres_uri, "memx-messages", start_up=True)
-    assert engine.table_name == '"memx-messages"'
-    assert engine.async_engine is not None
-    assert engine.sync_engine is not None
-    assert engine.AsyncSession is not None
-    assert engine.SyncSession is not None
-    assert callable(engine.sync.get_session)
+def test_engine_init(mongodb_cnx: MongoDBConnection):
+    engine = MongoDBEngine(mongodb_cnx.url, mongodb_cnx.db, mongodb_cnx.collection)
+    assert engine.sync_collection is not None
+    assert engine.async_collection is not None
+    assert engine.sync is not None
+    assert callable(engine.sync.get_session) is True
     assert iscoroutinefunction(engine.get_session)
-    assert isinstance(engine.table_sql, str) and len(engine.table_sql) > 0
-    assert isinstance(engine.add_sql, str) and len(engine.add_sql) > 0
-    assert isinstance(engine.get_sql, str) and len(engine.get_sql) > 0
-    assert isinstance(engine.get_session_sql, str) and len(engine.get_session_sql) > 0
 
 
-async def test_simple_add_async(postgres_uri: str):
-    engine = PostgresEngine(postgres_uri, "memx-messages-2", start_up=True)
+async def test_simple_add_async(mongodb_cnx: MongoDBConnection):
+    engine = MongoDBEngine(mongodb_cnx.url, mongodb_cnx.db, mongodb_cnx.collection)
     m1 = engine.create_session()
     messages = [{"role": "user", "content": "Hello, how are you?"}]
 
@@ -36,9 +36,11 @@ async def test_simple_add_async(postgres_uri: str):
     result = await m1.get()
     assert result == messages
 
+    await engine.async_client.aclose()
 
-def test_resume_session_sync(postgres_uri: str):
-    engine = PostgresEngine(postgres_uri, "memx-messages-3", start_up=True)
+
+def test_resume_session_sync(mongodb_cnx: MongoDBConnection):
+    engine = MongoDBEngine(mongodb_cnx.url, mongodb_cnx.db, mongodb_cnx.collection)
     m1 = engine.create_session()
     messages = [
         {"role": "system", "content": "You are a poetry expert"},
@@ -60,5 +62,5 @@ def test_resume_session_sync(postgres_uri: str):
 
     assert m2.sync.get() == messages  # type: ignore
     assert m1.sync.get() == m2.sync.get()  # type: ignore
-    assert engine.sync.get_session(uuid4()) is None
+    assert engine.sync.get_session(str(uuid4())) is None
     assert m1.get_id() == m2.get_id()  # type: ignore
