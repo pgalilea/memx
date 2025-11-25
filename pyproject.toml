@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "memx-ai"
-version = "0.1.10"
+version = "0.1.12"
 description = "Lightweight and extensible memory layer for LLMs"
 readme = "README.md"
 license = "MIT"
@@ -27,6 +27,7 @@ dev = [
     "pytest-asyncio>=1.3.0",
     "redis>=7.0.1",
     "ruff>=0.14.2",
+    "testcontainers[mongodb,postgres,redis]>=4.13.3",
 ]
 
 [project.optional-dependencies]
@@ -91,3 +92,6 @@ reportArgumentType = false
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+filterwarnings = [
+  "ignore:The @wait_container_is_ready decorator is deprecated:DeprecationWarning:testcontainers",
+]

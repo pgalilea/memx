@@ -37,6 +37,19 @@ async def test_flow_async(engine: SQLiteEngine | PostgresEngine | MongoDBEngine 
 
     print(await (await engine.get_session(session_id)).get())
 
+    await _close_engine(engine)
+
+
+async def _close_engine(engine: SQLiteEngine | PostgresEngine | MongoDBEngine | RedisEngine):
+    if isinstance(engine, SQLiteEngine):
+        await engine.async_engine.dispose(close=True)
+    elif isinstance(engine, PostgresEngine):
+        await engine.async_engine.dispose(close=True)
+    elif isinstance(engine, MongoDBEngine):
+        await engine.async_client.close()
+    elif isinstance(engine, RedisEngine):
+        await engine.async_client.aclose()
+
 
 async def amain():
     print("\n======== SQLite backend ========")

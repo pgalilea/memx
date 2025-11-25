@@ -44,7 +44,10 @@ class RedisEngine(BaseEngine):
         try:
             # NOTE: Starting with Redis 8, the JSON data structure is integral to Redis.
             # https://github.com/RedisJSON/RedisJSON
+            self.sync_client.get("memx")
             self.sync_client.json().get("memx", Path.root_path())
+        except redis.exceptions.ConnectionError as e:  # type: ignore
+            raise RuntimeError(f"Failed to connect to Redis instance: {e}") from e
         except Exception as e:
             raise RuntimeError("RedisJSON not found") from e
 
