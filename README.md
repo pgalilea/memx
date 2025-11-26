@@ -12,12 +12,12 @@
 ##  🔥 Key Features
 - **Framework agnostic**: Use your preferred AI agent framework.
 - **No vendor lock-in**: Use your preferred cloud provider or infrastructure. No third-party api keys; your data, your rules.
-- **Multiple backends**: Seamlessly move from your local *POC* to production deployment (SQLite, MongoDB, PostgreSQL).
+- **Multiple backends**: Seamlessly move from your local *POC* to production deployment (SQLite, MongoDB, PostgreSQL, Redis).
 - **Sync and async api**: Highly compatible with modern and *legacy* frameworks. 
 - **No forced schema**: As long it is a list of json serializable objects.
 - **Resumable memory**: Perfect for chat applications and REST APIs.
 - **Robust**: Get production-ready code with minimal effort.
-- **No esoteric patching**: <abbr title="What you see is what you get">WYSIWYG</abbr>. Act as a sidecar for your framework without touching your libraries under the hood.
+- **No esoteric patching**: You have 100% control over the things you persist (and the things you don't). Act as a sidecar for your framework without touching your libraries under the hood.
 
 
 ## ⚙️ Installation
@@ -119,10 +119,11 @@ if __name__ == "__main__":
 
 ```
 
-You can change the memory backend with minimal modifications. Same api to add and get messages.
+You can change the memory backend with minimal modifications. Same API to add and get messages.
 ```Python
 from memx.engine.mongodb import MongoDBEngine
 from memx.engine.postgres import PostgresEngine
+from memx.engine.redis import RedisEngine
 from memx.engine.sqlite import SQLiteEngine
 
 # SQLite backend
@@ -139,6 +140,11 @@ m2 = e2.create_session()
 mongodb_uri = "mongodb://admin:1234@localhost:27017"
 e3 = MongoDBEngine(mongodb_uri, "memx-test", "memx-messages")
 m3 = e3.create_session()
+
+# Redis backend
+redis_uri = "redis://default:1234@localhost:6379/0"
+e4 = RedisEngine(redis_uri, start_up=True)
+m4 = e4.create_session()
 
 ```
 

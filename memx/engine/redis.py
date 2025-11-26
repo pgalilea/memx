@@ -4,6 +4,7 @@ from redis.commands.json.path import Path
 from memx.engine import BaseEngine
 from memx.memory.redis import RedisMemory
 from memx.models import RedisEngineConfig
+from memx.utils import filter_kwargs
 
 
 class RedisEngine(BaseEngine):
@@ -11,9 +12,13 @@ class RedisEngine(BaseEngine):
     array_path = ".messages"
 
     def __init__(self, uri: str, start_up: bool = False, **kwargs):
-        # TODO: handle kwargs
-        self.sync_client = redis.Redis.from_url(uri, decode_responses=True)
-        self.async_client = redis.asyncio.Redis.from_url(uri, decode_responses=True)  # type: ignore
+        sync_kwargs = filter_kwargs(redis.Redis.__init__, kwargs) | {"decode_responses": True}
+        async_kwargs = filter_kwargs(redis.asyncio.Redis.__init__, kwargs) | {  # type: ignore
+            "decode_responses": True
+        }
+
+        self.sync_client = redis.Redis.from_url(uri, **sync_kwargs)
+        self.async_client = redis.asyncio.Redis.from_url(uri, **async_kwargs)  # type: ignore
 
         self.engine_config = RedisEngineConfig(
             prefix=self.key_prefix,

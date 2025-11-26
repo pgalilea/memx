@@ -20,7 +20,7 @@ def test_engine_init(postgres_uri: str):
 
 
 async def test_simple_add_async(postgres_uri: str):
-    engine = PostgresEngine(postgres_uri, "memx-messages-2", start_up=True)
+    engine = PostgresEngine(postgres_uri, f"memx-messages-{uuid4()}"[:-28], start_up=True)
     m1 = engine.create_session()
     messages = [{"role": "user", "content": "Hello, how are you?"}]
 
@@ -38,7 +38,7 @@ async def test_simple_add_async(postgres_uri: str):
 
 
 def test_resume_session_sync(postgres_uri: str):
-    engine = PostgresEngine(postgres_uri, "memx-messages-3", start_up=True)
+    engine = PostgresEngine(postgres_uri, f"memx-messages-{uuid4()}"[:-28], start_up=True)
     m1 = engine.create_session()
     messages = [
         {"role": "system", "content": "You are a poetry expert"},
@@ -61,4 +61,31 @@ def test_resume_session_sync(postgres_uri: str):
     assert m2.sync.get() == messages  # type: ignore
     assert m1.sync.get() == m2.sync.get()  # type: ignore
     assert engine.sync.get_session(uuid4()) is None
+    assert m1.get_id() == m2.get_id()  # type: ignore
+
+
+async def test_resume_session_async(postgres_uri: str):
+    engine = PostgresEngine(postgres_uri, f"memx-messages-{uuid4()}"[:-28], start_up=True)
+    m1 = engine.create_session()
+    messages = [
+        {"role": "system", "content": "You are a poetry expert"},
+        {"role": "user", "content": "Hello, how are you?"},
+        {"role": "assistant", "content": "Cherry blossoms bloom..."},
+        {"role": "user", "content": "What is the capital of France?"},
+        {"role": "assistant", "content": "Paris"},
+    ]
+    await m1.add(messages)
+    assert await m1.get() == messages
+
+    m2 = await engine.get_session(m1.get_id())
+    new_messages = [
+        {"role": "user", "content": "What is the capital of Japan?"},
+        {"role": "assistant", "content": "Tokyo"},
+    ]
+    await m2.add(new_messages)  # type: ignore
+    messages.extend(new_messages)
+
+    assert await m2.get() == messages  # type: ignore
+    assert await m1.get() == m2.sync.get()  # type: ignore
+    assert await engine.get_session(uuid4()) is None
     assert m1.get_id() == m2.get_id()  # type: ignore
