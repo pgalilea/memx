@@ -153,7 +153,7 @@ pytest tests -vs
 - [x] Add mongodb backend
 - [x] Add SQLite backend
 - [x] Add Postgres backend
-- [ ] Add redis backend
+- [x] Add redis backend
 - [ ] Add tests
 - [x] Publish on pypi
 - [x] Add full sync support

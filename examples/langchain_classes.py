@@ -1,4 +1,4 @@
-# https://docs.langchain.com/oss/python/langchain/messages
+# https://docs.langchain.com/oss/python/langchain/messages#basic-usage
 
 from langchain.chat_models import init_chat_model
 from langchain.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage

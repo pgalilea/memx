@@ -1,5 +1,5 @@
 from collections.abc import Generator
-from typing import NamedTuple
+from dataclasses import dataclass
 
 import pytest
 from testcontainers.mongodb import MongoDbContainer
@@ -7,7 +7,8 @@ from testcontainers.postgres import PostgresContainer
 from testcontainers.redis import RedisContainer
 
 
-class MongoDBConnection(NamedTuple):
+@dataclass(frozen=True)
+class MongoDBConnection:
     url: str
     db: str
     collection: str
