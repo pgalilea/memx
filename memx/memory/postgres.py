@@ -56,6 +56,8 @@ class PostgresMemory(BaseMemory):
 
 
 class _sync(BaseMemory):
+    """Sync methods for PostgresMemory."""
+
     def __init__(self, parent: "PostgresMemory"):
         self.pm = parent  # parent memory (?)
 

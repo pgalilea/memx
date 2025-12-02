@@ -42,7 +42,7 @@ class RedisEngine(BaseEngine):
             return RedisMemory(self.async_client, self.sync_client, self.engine_config, id)
 
     def start_up(self):
-        """Create the Redis key if it doesn't exist."""
+        """Check if the Redis instance is available and if RedisJSON is installed."""
 
         # self.sync_client.ping()
         # self.sync_client.info()

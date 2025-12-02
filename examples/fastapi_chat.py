@@ -30,15 +30,15 @@ class ChatResponse(BaseModel):
 
 
 @app.post("/chat", response_model=ChatResponse)
-def chat(message: ChatMessage):
+async def chat(message: ChatMessage):
     """
     Send a chat message without a specific session UUID.
     """
     session = engine.create_session()
 
-    response = model.invoke([{"role": "user", "content": message.message}])
+    response = await model.ainvoke([{"role": "user", "content": message.message}])
 
-    session.sync.add(
+    await session.add(
         [
             {"role": "user", "content": message.message},
             {"role": "assistant", "content": response.content},
@@ -52,22 +52,22 @@ def chat(message: ChatMessage):
 
 
 @app.post("/chat/{chat_id}", response_model=ChatResponse)
-def chat_with_uuid(chat_id: UUID, message: ChatMessage):
+async def chat_with_uuid(chat_id: UUID, message: ChatMessage):
     """
     Send a chat message to a specific session identified by UUID.
     """
 
     # NOTE: its developer's responsability to check the user-session permissions
-    session = engine.sync.get_session(chat_id)
+    session = await engine.get_session(chat_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    prev_messages = session.sync.get()
+    prev_messages = await session.get()
     user_message = [{"role": "user", "content": message.message}]
 
-    response = model.invoke(prev_messages + user_message)
+    response = await model.ainvoke(prev_messages + user_message)
 
-    session.sync.add(user_message + [{"role": "assistant", "content": response.content}])
+    await session.add(user_message + [{"role": "assistant", "content": response.content}])
 
     return ChatResponse(
         message=response.content,

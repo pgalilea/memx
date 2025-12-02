@@ -78,7 +78,7 @@ class PostgresEngine(BaseEngine):
         return None  # explicit is better than implicit
 
     def _init_queries(self):
-        """."""
+        """Initialize the queries for the engine."""
 
         self.table_sql = dedent(f"""
             CREATE TABLE IF NOT EXISTS {self.table_name} (

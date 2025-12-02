@@ -1,6 +1,6 @@
 from textwrap import dedent
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -68,7 +68,7 @@ class SQLiteEngine(BaseEngine):
         return None  # explicit is better than implicit
 
     def _init_queries(self):
-        """."""
+        """Initialize the queries for the engine."""
 
         self.table_sql = dedent(f"""
             CREATE TABLE IF NOT EXISTS {self.table_name} (

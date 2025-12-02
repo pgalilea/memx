@@ -56,6 +56,8 @@ class SQLiteMemory(BaseMemory):
 
 
 class _sync(BaseMemory):
+    """Sync methods for SQLiteMemory."""
+
     def __init__(self, parent: "SQLiteMemory"):
         self.pm = parent  # parent memory (?)
 

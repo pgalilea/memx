@@ -160,7 +160,7 @@ pytest tests -vs
 - [x] Add SQLite backend
 - [x] Add Postgres backend
 - [x] Add redis backend
-- [ ] Add tests
+- [x] Add tests
 - [x] Publish on pypi
 - [x] Add full sync support
 - [ ] Add docstrings
