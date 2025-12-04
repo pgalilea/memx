@@ -13,6 +13,22 @@ requires-python = ">=3.11"
 authors = [
     { name = "Pablo Galilea", email = "pgalilea@me.com" },
 ]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Database :: Database Engines/Servers",
+    "Typing :: Typed",
+]
+
 dependencies = [
     "aiofiles>=25.1.0",
     "orjson>=3.11.4",
@@ -70,6 +86,7 @@ include = [
 "README.md" = "README.md"
 
 [tool.ruff]
+line-length = 100
 select = [
     "E",  # pycodestyle errors
     "W",  # pycodestyle warnings
@@ -79,10 +96,15 @@ select = [
     "C4",  # flake8-comprehensions
     "UP",  # pyupgrade
 ]
-line-length = 99
-fixable = ["ALL"]
-unfixable = ["F401", "F403"]
-ignore = ["F401", "F403"]
+ignore = [
+    "F401",
+    "F403"
+]
+
+[tool.ruff.lint.isort]
+lines-after-imports = 2
+force-sort-within-sections = true
+combine-as-imports = true
 
 [tool.pyright]
 pythonVersion = "3.11"
