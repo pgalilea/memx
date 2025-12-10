@@ -6,8 +6,16 @@ from memx.memory.mongodb import MongoDBMemory
 
 
 class MongoDBEngine(BaseEngine):
-    def __init__(self, uri: str, database: str, collection: str):
-        """MongoDB memory engine."""
+    def __init__(self, uri: str, database: str, collection: str, ttl: int = None):
+        """
+        MongoDB memory engine.
+
+        Args:
+            uri: The MongoDB URI.
+            database: The MongoDB database name.
+            collection: The MongoDB collection name.
+            ttl: The TTL in seconds. If None, no TTL index will be created.
+        """
 
         self.sync_client = MongoClient(uri)
         self.async_client = AsyncMongoClient(
@@ -23,6 +31,9 @@ class MongoDBEngine(BaseEngine):
 
         self.sync = _sync(self)
 
+        if ttl:
+            self.start_up(ttl=ttl)  # blocking operation
+
     def create_session(self) -> MongoDBMemory:
         return MongoDBMemory(self.async_collection, self.sync_collection)
 
@@ -31,6 +42,29 @@ class MongoDBEngine(BaseEngine):
 
         if result:
             return MongoDBMemory(self.async_collection, self.sync_collection, id)
+
+    def start_up(self, ttl: int = None):
+        """Create the TTL index if it doesn't exist."""
+
+        self._create_ttl_index(ttl)
+
+    def _create_ttl_index(self, ttl: int):
+        """
+        Create the TTL index if it doesn't exist.
+
+        Args:
+            ttl: The TTL in seconds.
+        """
+
+        ttl_indexes = [
+            idx for idx in self.sync_collection.list_indexes() if "expireAfterSeconds" in idx
+        ]
+        idx_fields = [tuple(idx["key"].keys())[0] for idx in ttl_indexes]
+
+        for field in ["created_at"]:
+            if field not in idx_fields:
+                self.sync_collection.create_index(field, expireAfterSeconds=ttl)
+                # print(f"Created TTL in '{self.sync_collection}' for '{field}' with {ttl} seconds")
 
 
 class _sync:

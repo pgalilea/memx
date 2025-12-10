@@ -65,6 +65,4 @@ class _sync:
 
     def get_session(self, id: str) -> RedisMemory | None:
         if self.pe.sync_client.exists(f"{self.pe.key_prefix}{id}") > 0:  # type: ignore
-            return RedisMemory(
-                self.pe.async_client, self.pe.sync_client, self.pe.engine_config, id
-            )
+            return RedisMemory(self.pe.async_client, self.pe.sync_client, self.pe.engine_config, id)

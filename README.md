@@ -163,4 +163,5 @@ pytest tests -vs
 - [x] Add tests
 - [x] Publish on pypi
 - [x] Add full sync support
-- [ ] Add docstrings
+- [x] Add docstrings
+- [ ] Add TTL to mongodb and redis

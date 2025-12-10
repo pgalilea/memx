@@ -6,6 +6,7 @@ import pytest
 from memx.engine.mongodb import MongoDBEngine
 from tests.conftest import MongoDBConnection
 
+
 # Ignore deprecation warning from testcontainers
 pytestmark = pytest.mark.filterwarnings("ignore:The wait_for_logs function.*:DeprecationWarning")
 
@@ -64,3 +65,23 @@ def test_resume_session_sync(mongodb_cnx: MongoDBConnection):
     assert m1.sync.get() == m2.sync.get()  # type: ignore
     assert engine.sync.get_session(str(uuid4())) is None
     assert m1.get_id() == m2.get_id()  # type: ignore
+
+
+async def test_ttl_index(mongodb_cnx: MongoDBConnection):
+    # https://www.mongodb.com/docs/manual/core/index-ttl/
+    #
+    # The background task that removes expired documents runs every 60 seconds.
+    # As a result, documents may remain in a collection during the period between
+    # the expiration of the document and the running of the background task.
+    # MongoDB starts deleting documents 0 to 60 seconds after the index completes.
+
+    ttl = 3
+    engine = MongoDBEngine(mongodb_cnx.url, mongodb_cnx.db, "memx-test-ttl", ttl=ttl)
+    indexes = []
+
+    async for index in await engine.async_collection.list_indexes():
+        indexes.append((tuple(index["key"].keys())[0], index.get("expireAfterSeconds")))
+
+    assert ("created_at", ttl) in indexes
+
+    await engine.async_client.aclose()
