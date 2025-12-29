@@ -1,4 +1,5 @@
 from textwrap import dedent
+from uuid import UUID
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -69,11 +70,11 @@ class PostgresEngine(BaseEngine):
         )
         return PostgresMemory(self.AsyncSession, self.SyncSession, engine_config)
 
-    async def get_session(self, id: str) -> PostgresMemory | None:
+    async def get_session(self, id: UUID) -> PostgresMemory | None:
         """Get a memory session."""
 
-        if engine_config := await sql_service.get_session(self, id):
-            return PostgresMemory(self.AsyncSession, self.SyncSession, engine_config, id)
+        if engine_config := await sql_service.get_session(self, str(id)):
+            return PostgresMemory(self.AsyncSession, self.SyncSession, engine_config, str(id))
 
         return None  # explicit is better than implicit
 
@@ -122,10 +123,10 @@ class _sync:
     def __init__(self, parent: "PostgresEngine"):
         self.pe = parent
 
-    def get_session(self, id: str) -> PostgresMemory | None:
+    def get_session(self, id: UUID) -> PostgresMemory | None:
         """Get a memory session."""
 
-        if engine_config := sql_service.get_session_sync(self.pe, id):
-            return PostgresMemory(self.pe.AsyncSession, self.pe.SyncSession, engine_config, id)
+        if engine_config := sql_service.get_session_sync(self.pe, str(id)):
+            return PostgresMemory(self.pe.AsyncSession, self.pe.SyncSession, engine_config, str(id))
 
         return None  # explicit is better than implicit

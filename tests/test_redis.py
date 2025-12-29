@@ -1,7 +1,7 @@
 from inspect import iscoroutinefunction
-from uuid import uuid4
 
 from memx.engine.redis import RedisEngine
+from memx.utils.uuid import uuid7
 
 
 def test_engine_init(redis_uri: str):
@@ -57,5 +57,5 @@ def test_resume_session_sync(redis_uri: str):
 
     assert m2.sync.get() == messages  # type: ignore
     assert m1.sync.get() == m2.sync.get()  # type: ignore
-    assert engine.sync.get_session(uuid4()) is None
+    assert engine.sync.get_session(uuid7()) is None
     assert m1.get_id() == m2.get_id()  # type: ignore

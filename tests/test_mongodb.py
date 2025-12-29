@@ -1,9 +1,9 @@
 from inspect import iscoroutinefunction
-from uuid import uuid4
 
 import pytest
 
 from memx.engine.mongodb import MongoDBEngine
+from memx.utils.uuid import uuid7
 from tests.conftest import MongoDBConnection
 
 
@@ -63,7 +63,7 @@ def test_resume_session_sync(mongodb_cnx: MongoDBConnection):
 
     assert m2.sync.get() == messages  # type: ignore
     assert m1.sync.get() == m2.sync.get()  # type: ignore
-    assert engine.sync.get_session(str(uuid4())) is None
+    assert engine.sync.get_session(str(uuid7())) is None
     assert m1.get_id() == m2.get_id()  # type: ignore
 
 

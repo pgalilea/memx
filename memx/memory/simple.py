@@ -1,18 +1,18 @@
 import asyncio
-import pickle
 from pathlib import Path
-from uuid import uuid4
+import pickle
 
 import aiofiles
 from typing_extensions import deprecated
 
 from memx.memory import BaseMemory
+from memx.utils.uuid import uuid7
 
 
 @deprecated("Use SQLiteMemory instead")
 class DiskMemory(BaseMemory):
     def __init__(self, session_id: str = None, dir: str = None):
-        file_id = session_id if session_id else str(uuid4())
+        file_id = session_id if session_id else str(uuid7())
         file_dir = Path(dir) if dir else Path.home() / ".memx"
 
         self.file_path = Path(file_dir) / f"{file_id}.pkl"
@@ -85,7 +85,7 @@ class InMemory(BaseMemory):
             self._messages = __memx_in_memory__[session_id]
             _session_id = session_id
         else:
-            _session_id = str(uuid4())
+            _session_id = str(uuid7())
             __memx_in_memory__[_session_id] = []
             self._messages = __memx_in_memory__[_session_id]
 

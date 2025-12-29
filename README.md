@@ -6,7 +6,7 @@
 <p align="center">Lightweight and extensible memory layer for LLMs.</p>
 <br/><br/>
 
-**Important Disclaimer**: This library is intended to be production-ready, but currently is in active development. Fix the package version and run your own tests :)
+**Important Disclaimer**: Fix the package version and run your own tests :)
 
 
 ##  🔥 Key Features
@@ -152,7 +152,7 @@ m4 = e4.create_session()
 
 ## Tests
 ```sh
-pytest tests -vs
+uv run pytest tests -vs
 ```
 
 ## Tasks

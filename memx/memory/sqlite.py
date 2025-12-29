@@ -1,5 +1,3 @@
-from uuid import uuid4
-
 import orjson
 from sqlalchemy import Result, text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
@@ -9,6 +7,7 @@ from memx.memory import BaseMemory
 from memx.models import JSON
 from memx.models.sql import SQLEngineConfig
 from memx.services import sql_service
+from memx.utils.uuid import uuid7
 
 
 class SQLiteMemory(BaseMemory):
@@ -29,7 +28,7 @@ class SQLiteMemory(BaseMemory):
         if session_id:
             self._session_id = session_id
         else:
-            self._session_id = str(uuid4())
+            self._session_id = str(uuid7())
 
     async def add(self, messages: list[JSON]):
         await self._pre_add()

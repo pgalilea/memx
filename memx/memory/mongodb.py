@@ -1,10 +1,10 @@
 from datetime import UTC, datetime
-from uuid import uuid4
 
 from pymongo.asynchronous.collection import AsyncCollection
 from pymongo.collection import Collection
 
 from memx.memory import BaseMemory
+from memx.utils.uuid import uuid7
 
 
 class MongoDBMemory(BaseMemory):
@@ -22,7 +22,7 @@ class MongoDBMemory(BaseMemory):
         if session_id:
             self._session_id = session_id
         else:
-            self._session_id = str(uuid4())
+            self._session_id = str(uuid7())
 
     async def add(self, messages: list[dict]):
         ts_now = datetime.now(UTC)

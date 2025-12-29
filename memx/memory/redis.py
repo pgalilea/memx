@@ -1,11 +1,11 @@
 from datetime import UTC, datetime
-from uuid import uuid4
 
 import redis
 from redis.commands.json.path import Path
 
 from memx.memory import BaseMemory
 from memx.models import JSON, RedisEngineConfig
+from memx.utils.uuid import uuid7
 
 
 class RedisMemory(BaseMemory):
@@ -26,7 +26,7 @@ class RedisMemory(BaseMemory):
         if session_id:
             self._session_id = session_id
         else:
-            self._session_id = str(uuid4())
+            self._session_id = str(uuid7())
 
         self.key = f"{self.engine_config.prefix}{self._session_id}"  # TODO: slice the session_id to avoid long keys (?)
 
