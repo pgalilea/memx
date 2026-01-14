@@ -150,12 +150,12 @@ m4 = e4.create_session()
 
 [More examples...](examples/)
 
-## Tests
+## 🧪 Tests
 ```sh
 uv run pytest tests -vs
 ```
 
-## Tasks
+## 📝 Tasks
 - [x] Add mongodb backend
 - [x] Add SQLite backend
 - [x] Add Postgres backend
@@ -164,4 +164,5 @@ uv run pytest tests -vs
 - [x] Publish on pypi
 - [x] Add full sync support
 - [x] Add docstrings
-- [ ] Add TTL to mongodb and redis
+- [x] Add TTL to mongodb
+- [ ] Add TTL to redis

@@ -14,7 +14,7 @@ class MongoDBEngine(BaseEngine):
             uri: The MongoDB URI.
             database: The MongoDB database name.
             collection: The MongoDB collection name.
-            ttl: The TTL in seconds. If None, no TTL index will be created.
+            ttl: The TTL in seconds. If None, no TTL index will be created. Blocking operation.
         """
 
         self.sync_client = MongoClient(uri)
