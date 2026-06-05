@@ -28,7 +28,8 @@ class RedisMemory(BaseMemory):
         else:
             self._session_id = str(uuid7())
 
-        self.key = f"{self.engine_config.prefix}{self._session_id}"  # TODO: slice the session_id to avoid long keys (?)
+        # TODO: slice the session_id to avoid long keys (?)
+        self.key = f"{self.engine_config.prefix}{self._session_id}"
 
     async def add(self, messages: list[JSON]):
         ts_now = datetime.now(UTC).isoformat()
@@ -42,6 +43,8 @@ class RedisMemory(BaseMemory):
 
         if (await self.async_client.exists(self.key)) == 0:  # does not exist, create it
             await self.async_client.json().set(self.key, Path.root_path(), data)  # type: ignore
+            if self.engine_config.ttl is not None:
+                await self.async_client.expire(self.key, self.engine_config.ttl)
         else:
             # TODO: merge ops in a transaction
             await self.async_client.json().arrappend(
@@ -70,6 +73,8 @@ class _sync(BaseMemory):
 
         if (self.pm.sync_client.exists(self.pm.key)) == 0:  # does not exist, create it
             self.pm.sync_client.json().set(self.pm.key, Path.root_path(), data)  # type: ignore
+            if self.pm.engine_config.ttl is not None:
+                self.pm.sync_client.expire(self.pm.key, self.pm.engine_config.ttl)
         else:
             # TODO: to transaction
             self.pm.sync_client.json().arrappend(

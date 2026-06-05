@@ -165,4 +165,4 @@ uv run pytest tests -vs
 - [x] Add full sync support
 - [x] Add docstrings
 - [x] Add TTL to mongodb
-- [ ] Add TTL to redis
+- [x] Add TTL to redis

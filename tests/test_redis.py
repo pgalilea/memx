@@ -30,6 +30,7 @@ async def test_simple_add_async(redis_uri: str):
 
     result = await m1.get()
     assert result == messages
+    assert await m1.async_client.ttl(m1.key) == -1  # the key exists, but it has no expiration set
 
     await engine.async_client.aclose()
 
@@ -59,3 +60,24 @@ def test_resume_session_sync(redis_uri: str):
     assert m1.sync.get() == m2.sync.get()  # type: ignore
     assert engine.sync.get_session(uuid7()) is None
     assert m1.get_id() == m2.get_id()  # type: ignore
+    assert m1.sync_client.ttl(m1.key) == -1  # the key exists, but it has no expiration set
+
+
+def test_ttl_sync(redis_uri: str):
+    ttl = 10
+    engine = RedisEngine(redis_uri, start_up=True, ttl=ttl)
+    m1 = engine.create_session()
+    m1.sync.add([{}, {}, {}])
+
+    assert 0 < m1.sync_client.ttl(m1.key) <= ttl  # type: ignore
+
+
+async def test_ttl_async(redis_uri: str):
+    ttl = 10
+    engine = RedisEngine(redis_uri, start_up=True, ttl=ttl)
+    m1 = engine.create_session()
+    await m1.add([{}, {}, {}])
+
+    assert 0 < (await m1.async_client.ttl(m1.key)) <= ttl  # type: ignore
+
+    await engine.async_client.aclose()

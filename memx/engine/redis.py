@@ -11,7 +11,16 @@ class RedisEngine(BaseEngine):
     key_prefix = "memx:session:"
     array_path = ".messages"
 
-    def __init__(self, uri: str, start_up: bool = False, **kwargs):
+    def __init__(self, uri: str, start_up: bool = False, ttl: int = None, **kwargs):
+        """
+        Redis memory engine.
+
+        Args:
+            uri: The Redis URI.
+            start_up: Check the connection to redis instance (blocking operation).
+            ttl: The TTL of the keys in seconds.
+        """
+
         sync_kwargs = filter_kwargs(redis.Redis.__init__, kwargs) | {"decode_responses": True}
         async_kwargs = filter_kwargs(redis.asyncio.Redis.__init__, kwargs) | {  # type: ignore
             "decode_responses": True
@@ -21,8 +30,7 @@ class RedisEngine(BaseEngine):
         self.async_client = redis.asyncio.Redis.from_url(uri, **async_kwargs)  # type: ignore
 
         self.engine_config = RedisEngineConfig(
-            prefix=self.key_prefix,
-            array_path=self.array_path,
+            prefix=self.key_prefix, array_path=self.array_path, ttl=ttl
         )
 
         self.sync = _sync(self)
@@ -32,9 +40,8 @@ class RedisEngine(BaseEngine):
 
     def create_session(self) -> RedisMemory:
         engine_config = RedisEngineConfig(
-            prefix=self.key_prefix,
-            array_path=self.array_path,
-        )
+            prefix=self.key_prefix, array_path=self.array_path, ttl=self.engine_config.ttl
+        )  # every session has its own config instance (?)
         return RedisMemory(self.async_client, self.sync_client, engine_config)
 
     async def get_session(self, id: str) -> RedisMemory | None:
