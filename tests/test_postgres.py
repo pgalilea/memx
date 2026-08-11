@@ -5,7 +5,7 @@ from memx.utils.uuid import uuid7
 
 
 def test_engine_init(postgres_uri: str):
-    engine = PostgresEngine(postgres_uri, "memx-messages", start_up=True)
+    engine = PostgresEngine(postgres_uri, "memx-messages", setup=True)
     assert engine.table_name == '"memx-messages"'
     assert engine.async_engine is not None
     assert engine.sync_engine is not None
@@ -20,7 +20,7 @@ def test_engine_init(postgres_uri: str):
 
 
 async def test_simple_add_async(postgres_uri: str):
-    engine = PostgresEngine(postgres_uri, f"memx-messages-{uuid7()}"[:-28], start_up=True)
+    engine = PostgresEngine(postgres_uri, f"memx-messages-{uuid7()}"[:-28], setup=True)
     m1 = engine.create_session()
     messages = [{"role": "user", "content": "Hello, how are you?"}]
 
@@ -38,7 +38,7 @@ async def test_simple_add_async(postgres_uri: str):
 
 
 def test_resume_session_sync(postgres_uri: str):
-    engine = PostgresEngine(postgres_uri, f"memx-messages-{uuid7()}"[:-28], start_up=True)
+    engine = PostgresEngine(postgres_uri, f"memx-messages-{uuid7()}"[:-28], setup=True)
     m1 = engine.create_session()
     messages = [
         {"role": "system", "content": "You are a poetry expert"},
@@ -65,7 +65,7 @@ def test_resume_session_sync(postgres_uri: str):
 
 
 async def test_resume_session_async(postgres_uri: str):
-    engine = PostgresEngine(postgres_uri, f"memx-messages-{uuid7()}"[:-28], start_up=True)
+    engine = PostgresEngine(postgres_uri, f"memx-messages-{uuid7()}"[:-28], setup=True)
     m1 = engine.create_session()
     messages = [
         {"role": "system", "content": "You are a poetry expert"},

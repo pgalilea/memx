@@ -5,7 +5,7 @@ from memx.utils.uuid import uuid7
 
 
 def test_engine_init(redis_uri: str):
-    engine = RedisEngine(redis_uri, start_up=True)
+    engine = RedisEngine(redis_uri, setup=True)
     assert engine.sync_client is not None
     assert engine.async_client is not None
     assert engine.engine_config is not None
@@ -15,7 +15,7 @@ def test_engine_init(redis_uri: str):
 
 
 async def test_simple_add_async(redis_uri: str):
-    engine = RedisEngine(redis_uri, start_up=True)
+    engine = RedisEngine(redis_uri, setup=True)
     m1 = engine.create_session()
     messages = [{"role": "user", "content": "Hello, how are you?"}]
 
@@ -36,7 +36,7 @@ async def test_simple_add_async(redis_uri: str):
 
 
 def test_resume_session_sync(redis_uri: str):
-    engine = RedisEngine(redis_uri, start_up=True)
+    engine = RedisEngine(redis_uri, setup=True)
     m1 = engine.create_session()
     messages = [
         {"role": "system", "content": "You are a poetry expert"},
@@ -65,7 +65,7 @@ def test_resume_session_sync(redis_uri: str):
 
 def test_ttl_sync(redis_uri: str):
     ttl = 10
-    engine = RedisEngine(redis_uri, start_up=True, ttl=ttl)
+    engine = RedisEngine(redis_uri, setup=True, ttl=ttl)
     m1 = engine.create_session()
     m1.sync.add([{}, {}, {}])
 
@@ -74,7 +74,7 @@ def test_ttl_sync(redis_uri: str):
 
 async def test_ttl_async(redis_uri: str):
     ttl = 10
-    engine = RedisEngine(redis_uri, start_up=True, ttl=ttl)
+    engine = RedisEngine(redis_uri, setup=True, ttl=ttl)
     m1 = engine.create_session()
     await m1.add([{}, {}, {}])
 

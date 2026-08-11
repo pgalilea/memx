@@ -13,8 +13,9 @@ from pydantic import BaseModel
 
 from memx.engine.postgres import PostgresEngine
 
+
 pg_uri = getenv("POSTGRES_URI")
-engine = PostgresEngine(pg_uri, "memx-messages", start_up=True)
+engine = PostgresEngine(pg_uri, "memx-messages", setup=True)
 model = init_chat_model("gpt-4o-mini")
 
 app = FastAPI(title="Chat API", version="1.0.0")

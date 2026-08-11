@@ -54,13 +54,13 @@ async def _close_engine(engine: SQLiteEngine | PostgresEngine | MongoDBEngine | 
 async def amain():
     print("\n======== SQLite backend ========")
     sqlite_uri = "sqlite+aiosqlite:///memx-store.db"
-    engine1 = SQLiteEngine(sqlite_uri, "memx-messages", start_up=True)
+    engine1 = SQLiteEngine(sqlite_uri, "memx-messages", setup=True)
 
     await test_flow_async(engine1)
 
     print("\n======== PostgreSQL backend ========")
     pg_uri = "postgresql+psycopg://admin:1234@localhost:5433/test-database"
-    engine1 = PostgresEngine(pg_uri, "memx-messages", start_up=True)
+    engine1 = PostgresEngine(pg_uri, "memx-messages", setup=True)
 
     await test_flow_async(engine1)
 
@@ -73,7 +73,7 @@ async def amain():
     print("\n======== Redis backend ========")
     # https://github.com/redis/redis-py/issues/3431
     redis_uri = "redis://default:1234@localhost:6379/0"
-    engine1 = RedisEngine(redis_uri, start_up=True)
+    engine1 = RedisEngine(redis_uri, setup=True)
 
     await test_flow_async(engine1)
 
@@ -81,13 +81,13 @@ async def amain():
 def main():
     print("\n======== SQLite backend ========")
     sqlite_uri = "sqlite+aiosqlite:///memx-store.db"
-    engine1 = SQLiteEngine(sqlite_uri, "memx-messages", start_up=True)
+    engine1 = SQLiteEngine(sqlite_uri, "memx-messages", setup=True)
 
     test_flow_sync(engine1)
 
     print("\n======== PostgreSQL backend ========")
     pg_uri = "postgresql+psycopg://admin:1234@localhost:5433/test-database"
-    engine1 = PostgresEngine(pg_uri, "memx-messages", start_up=True)
+    engine1 = PostgresEngine(pg_uri, "memx-messages", setup=True)
 
     test_flow_sync(engine1)
 
@@ -99,7 +99,7 @@ def main():
 
     print("\n======== Redis backend ========")
     redis_uri = "redis://default:1234@localhost:6379/0"
-    engine1 = RedisEngine(redis_uri, start_up=True)
+    engine1 = RedisEngine(redis_uri, setup=True)
 
     test_flow_sync(engine1)
 

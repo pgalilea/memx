@@ -11,13 +11,13 @@ from memx.services import sql_service
 
 
 class SQLiteEngine(BaseEngine):
-    def __init__(self, uri: str, table: str, start_up: bool = False):
+    def __init__(self, uri: str, table: str, setup: bool = False):
         """Initialize SQLite engine for memory storage.
 
         Args:
             uri: Database connection URI for SQLite.
             table: Name of the table to use for storing memories.
-            start_up: If True, create the table if it doesn't exist (blocking operation).
+            setup: If True, create the table if it doesn't exist (blocking operation).
         """
 
         self.table_name = f"'{table.strip()}'"
@@ -46,7 +46,7 @@ class SQLiteEngine(BaseEngine):
 
         self.sync = _sync(self)
 
-        if start_up:
+        if setup:
             self.start_up()  # blocking operation
 
     def create_session(self) -> SQLiteMemory:

@@ -39,7 +39,7 @@ from openai import OpenAI
 from memx.engine.sqlite import SQLiteEngine
 
 sqlite_uri = "sqlite+aiosqlite:///message-storage.db"
-engine = SQLiteEngine(sqlite_uri, "memx-messages", start_up=True)
+engine = SQLiteEngine(sqlite_uri, "memx-messages", setup=True)
 m1 = engine.create_session()  # create a new session
 
 client = OpenAI()
@@ -88,7 +88,7 @@ agent = Agent("openai:gpt-4o-mini")
 
 async def main():
     sqlite_uri = "sqlite+aiosqlite:///message_store.db"
-    engine = SQLiteEngine(sqlite_uri, "memx-messages", start_up=True)
+    engine = SQLiteEngine(sqlite_uri, "memx-messages", setup=True)
     m1 = engine.create_session()  # create a new session
 
     result1 = await agent.run('Where does "hello world" come from?')
@@ -128,12 +128,12 @@ from memx.engine.sqlite import SQLiteEngine
 
 # SQLite backend
 sqlite_uri = "sqlite+aiosqlite:///message_store.db"
-e1 = SQLiteEngine(sqlite_uri, "memx-messages", start_up=True)
+e1 = SQLiteEngine(sqlite_uri, "memx-messages", setup=True)
 m1 = e1.create_session() # memory session ready to go
 
 # PostgreSQL backend
 pg_uri = "postgresql+psycopg://admin:1234@localhost:5433/test-database"
-e2 = PostgresEngine(pg_uri, "memx-messages", start_up=True)
+e2 = PostgresEngine(pg_uri, "memx-messages", setup=True)
 m2 = e2.create_session()
 
 # MongoDB backend
@@ -143,7 +143,7 @@ m3 = e3.create_session()
 
 # Redis backend
 redis_uri = "redis://default:1234@localhost:6379/0"
-e4 = RedisEngine(redis_uri, start_up=True)
+e4 = RedisEngine(redis_uri, setup=True)
 m4 = e4.create_session()
 
 ```

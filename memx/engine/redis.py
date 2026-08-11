@@ -11,13 +11,13 @@ class RedisEngine(BaseEngine):
     key_prefix = "memx:session:"
     array_path = ".messages"
 
-    def __init__(self, uri: str, start_up: bool = False, ttl: int = None, **kwargs):
+    def __init__(self, uri: str, setup: bool = False, ttl: int = None, **kwargs):
         """
         Redis memory engine.
 
         Args:
             uri: The Redis URI.
-            start_up: Check the connection to redis instance (blocking operation).
+            setup: Check the connection to redis instance (blocking operation).
             ttl: The TTL of the keys in seconds.
         """
 
@@ -35,7 +35,7 @@ class RedisEngine(BaseEngine):
 
         self.sync = _sync(self)
 
-        if start_up:
+        if setup:
             self.start_up()  # blocking operation
 
     def create_session(self) -> RedisMemory:

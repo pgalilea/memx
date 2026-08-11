@@ -8,7 +8,7 @@ from memx.engine.sqlite import SQLiteEngine
 
 def test_engine_init():
     sqlite_uri = "sqlite+aiosqlite:///:memory:"
-    engine = SQLiteEngine(sqlite_uri, "test-messages", start_up=True)
+    engine = SQLiteEngine(sqlite_uri, "test-messages", setup=True)
     assert engine.table_name == "'test-messages'"
     assert engine.async_engine is not None
     assert engine.sync_engine is not None
@@ -23,7 +23,7 @@ def test_engine_init():
 
 def test_same_session_attributes():
     sqlite_uri = "sqlite+aiosqlite:///:memory:"
-    engine1 = SQLiteEngine(sqlite_uri, "test-messages", start_up=True)
+    engine1 = SQLiteEngine(sqlite_uri, "test-messages", setup=True)
     m1 = engine1.create_session()
     m2 = engine1.create_session()
 
@@ -34,7 +34,7 @@ def test_same_session_attributes():
 
 def test_simple_add():
     sqlite_uri = "sqlite+aiosqlite:///:memory:"
-    engine = SQLiteEngine(sqlite_uri, "test-messages", start_up=True)
+    engine = SQLiteEngine(sqlite_uri, "test-messages", setup=True)
     m1 = engine.create_session()
 
     messages = [{"role": "user", "content": "Hello, how are you?"}]
@@ -51,7 +51,7 @@ def test_simple_add():
 
 def test_resume_session():
     sqlite_uri = "sqlite+aiosqlite:///:memory:"
-    engine = SQLiteEngine(sqlite_uri, "test-messages", start_up=True)
+    engine = SQLiteEngine(sqlite_uri, "test-messages", setup=True)
     m1 = engine.create_session()
     session_id = m1.get_id()
 
@@ -71,7 +71,7 @@ def test_resume_session():
 async def test_simple_add_async():
     fp = tempfile.gettempdir() + "/memx-test.db"
     sqlite_uri = f"sqlite+aiosqlite:///{fp}"
-    engine = SQLiteEngine(sqlite_uri, "test-messages", start_up=True)
+    engine = SQLiteEngine(sqlite_uri, "test-messages", setup=True)
     m1 = engine.create_session()
 
     messages = [{"role": "user", "content": "Hello, how are you?"}]
@@ -91,7 +91,7 @@ async def test_simple_add_async():
 async def test_resume_session_async():
     fp = tempfile.gettempdir() + "/memx-test.db"
     sqlite_uri = f"sqlite+aiosqlite:///{fp}"
-    engine = SQLiteEngine(sqlite_uri, "test-messages", start_up=True)
+    engine = SQLiteEngine(sqlite_uri, "test-messages", setup=True)
     m1 = engine.create_session()
 
     messages = [{"role": "user", "content": "Hello, how are you?"}]
@@ -110,7 +110,7 @@ async def test_resume_session_async():
 
 def test_put_and_get_one():
     sqlite_uri = "sqlite+aiosqlite:///:memory:"
-    engine = SQLiteEngine(sqlite_uri, "test-messages", start_up=True)
+    engine = SQLiteEngine(sqlite_uri, "test-messages", setup=True)
     m1 = engine.create_session()
 
     assert m1.sync.get_one() is None
@@ -128,7 +128,7 @@ def test_put_typed_dict():
         age: int
 
     sqlite_uri = "sqlite+aiosqlite:///:memory:"
-    engine = SQLiteEngine(sqlite_uri, "test-messages", start_up=True)
+    engine = SQLiteEngine(sqlite_uri, "test-messages", setup=True)
     m1 = engine.create_session()
 
     user: User = {"name": "alice", "age": 30}
@@ -140,7 +140,7 @@ def test_put_typed_dict():
 async def test_put_and_get_one_async():
     fp = tempfile.gettempdir() + "/memx-test.db"
     sqlite_uri = f"sqlite+aiosqlite:///{fp}"
-    engine = SQLiteEngine(sqlite_uri, "test-messages", start_up=True)
+    engine = SQLiteEngine(sqlite_uri, "test-messages", setup=True)
     m1 = engine.create_session()
 
     assert await m1.get_one() is None

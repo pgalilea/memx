@@ -7,12 +7,13 @@ from pydantic_ai import Agent, ModelMessagesTypeAdapter
 
 from memx.engine.sqlite import SQLiteEngine
 
+
 agent = Agent("openai:gpt-4o-mini")
 
 
 async def main():
     sqlite_uri = "sqlite+aiosqlite:///message_store.db"
-    engine = SQLiteEngine(sqlite_uri, "memx-messages", start_up=True)
+    engine = SQLiteEngine(sqlite_uri, "memx-messages", setup=True)
     m1 = engine.create_session()  # create a new session
 
     result1 = await agent.run('Where does "hello world" come from?')

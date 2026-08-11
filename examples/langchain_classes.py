@@ -8,7 +8,7 @@ from memx.engine.sqlite import SQLiteEngine
 
 model = init_chat_model("gpt-4o-mini")
 
-engine = SQLiteEngine("sqlite+aiosqlite:///:memory:", "memx-messages", start_up=True)
+engine = SQLiteEngine("sqlite+aiosqlite:///:memory:", "memx-messages", setup=True)
 m1 = engine.create_session()  # create a new session
 
 # first interaction
