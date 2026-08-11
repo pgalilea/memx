@@ -87,7 +87,7 @@ include = [
 
 [tool.ruff]
 line-length = 100
-select = [
+lint.select = [
     "E",  # pycodestyle errors
     "W",  # pycodestyle warnings
     "F",  # pyflakes
@@ -96,7 +96,7 @@ select = [
     "C4",  # flake8-comprehensions
     "UP",  # pyupgrade
 ]
-ignore = [
+lint.ignore = [
     "F401",
     "F403"
 ]

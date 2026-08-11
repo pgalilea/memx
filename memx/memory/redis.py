@@ -56,6 +56,14 @@ class RedisMemory(BaseMemory):
         messages = await self.async_client.json().get(self.key, self.engine_config.array_path)  # type: ignore
         return messages or []
 
+    async def put(self, data: dict):
+        await self.add([data])
+
+    async def get_one(self) -> JSON | None:
+        messages = await self.get()
+
+        return messages[-1] if messages else None
+
 
 class _sync(BaseMemory):
     def __init__(self, parent: "RedisMemory"):
@@ -85,3 +93,11 @@ class _sync(BaseMemory):
     def get(self) -> list[JSON]:
         messages = self.pm.sync_client.json().get(self.pm.key, self.pm.engine_config.array_path)  # type: ignore
         return messages or []  # type: ignore
+
+    def put(self, data: dict):
+        self.pm.sync.add([data])
+
+    def get_one(self) -> JSON | None:
+        messages = self.pm.sync.get()
+
+        return messages[-1] if messages else None

@@ -67,6 +67,34 @@ def test_resume_session_sync(mongodb_cnx: MongoDBConnection):
     assert m1.get_id() == m2.get_id()  # type: ignore
 
 
+def test_put_and_get_one_sync(mongodb_cnx: MongoDBConnection):
+    engine = MongoDBEngine(mongodb_cnx.url, mongodb_cnx.db, mongodb_cnx.collection)
+    m1 = engine.create_session()
+
+    assert m1.sync.get_one() is None
+
+    data = {"user": "alice", "preferences": {"language": "en"}}
+    m1.sync.put(data)
+
+    assert m1.sync.get() == [data]
+    assert m1.sync.get_one() == data
+
+
+async def test_put_and_get_one_async(mongodb_cnx: MongoDBConnection):
+    engine = MongoDBEngine(mongodb_cnx.url, mongodb_cnx.db, mongodb_cnx.collection)
+    m1 = engine.create_session()
+
+    assert await m1.get_one() is None
+
+    data = {"user": "bob", "preferences": {"language": "es"}}
+    await m1.put(data)
+
+    assert await m1.get() == [data]
+    assert await m1.get_one() == data
+
+    await engine.async_client.aclose()
+
+
 async def test_ttl_index(mongodb_cnx: MongoDBConnection):
     # https://www.mongodb.com/docs/manual/core/index-ttl/
     #

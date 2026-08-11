@@ -81,3 +81,31 @@ async def test_ttl_async(redis_uri: str):
     assert 0 < (await m1.async_client.ttl(m1.key)) <= ttl  # type: ignore
 
     await engine.async_client.aclose()
+
+
+def test_put_and_get_one_sync(redis_uri: str):
+    engine = RedisEngine(redis_uri, setup=True)
+    m1 = engine.create_session()
+
+    assert m1.sync.get_one() is None
+
+    data = {"user": "alice", "preferences": {"language": "en"}}
+    m1.sync.put(data)
+
+    assert m1.sync.get() == [data]
+    assert m1.sync.get_one() == data
+
+
+async def test_put_and_get_one_async(redis_uri: str):
+    engine = RedisEngine(redis_uri, setup=True)
+    m1 = engine.create_session()
+
+    assert await m1.get_one() is None
+
+    data = {"user": "bob", "preferences": {"language": "es"}}
+    await m1.put(data)
+
+    assert await m1.get() == [data]
+    assert await m1.get_one() == data
+
+    await engine.async_client.aclose()

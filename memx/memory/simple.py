@@ -52,6 +52,14 @@ class DiskMemory(BaseMemory):
 
         return stored_messages
 
+    async def put(self, data: dict):
+        await self.add([data])
+
+    async def get_one(self) -> dict | None:
+        messages = await self.get()
+
+        return messages[-1] if messages else None
+
 
 class _sync(BaseMemory):
     def __init__(self, parent: "DiskMemory"):
@@ -71,6 +79,14 @@ class _sync(BaseMemory):
             stored_messages: list[dict] = pickle.load(f)
 
         return stored_messages
+
+    def put(self, data: dict):
+        self.pm.sync.add([data])
+
+    def get_one(self) -> dict | None:
+        messages = self.pm.sync.get()
+
+        return messages[-1] if messages else None
 
 
 @deprecated("Use SQLiteMemory with :memory: URI instead")
@@ -98,3 +114,11 @@ class InMemory(BaseMemory):
         self,
     ) -> list[str]:
         return self._messages
+
+    def put(self, data: dict):
+        self.add([data])
+
+    def get_one(self) -> str | None:
+        messages = self.get()
+
+        return messages[-1] if messages else None

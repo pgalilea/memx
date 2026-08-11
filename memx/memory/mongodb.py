@@ -42,6 +42,14 @@ class MongoDBMemory(BaseMemory):
 
         return (doc or {}).get("messages", [])
 
+    async def put(self, data: dict):
+        await self.add([data])
+
+    async def get_one(self) -> dict | None:
+        messages = await self.get()
+
+        return messages[-1] if messages else None
+
 
 class _sync(BaseMemory):
     """Sync methods for MongoDBMemory."""
@@ -66,3 +74,11 @@ class _sync(BaseMemory):
         doc = self.pm.sync_collection.find_one({"session_id": self.pm._session_id})
 
         return (doc or {}).get("messages", [])
+
+    def put(self, data: dict):
+        self.pm.sync.add([data])
+
+    def get_one(self) -> dict | None:
+        messages = self.pm.sync.get()
+
+        return messages[-1] if messages else None

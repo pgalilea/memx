@@ -89,3 +89,29 @@ async def test_resume_session_async(postgres_uri: str):
     assert await m1.get() == m2.sync.get()  # type: ignore
     assert await engine.get_session(uuid7()) is None
     assert m1.get_id() == m2.get_id()  # type: ignore
+
+
+def test_put_and_get_one_sync(postgres_uri: str):
+    engine = PostgresEngine(postgres_uri, f"memx-messages-{uuid7()}"[:-28], setup=True)
+    m1 = engine.create_session()
+
+    assert m1.sync.get_one() is None
+
+    data = {"user": "alice", "preferences": {"language": "en"}}
+    m1.sync.put(data)
+
+    assert m1.sync.get() == [data]
+    assert m1.sync.get_one() == data
+
+
+async def test_put_and_get_one_async(postgres_uri: str):
+    engine = PostgresEngine(postgres_uri, f"memx-messages-{uuid7()}"[:-28], setup=True)
+    m1 = engine.create_session()
+
+    assert await m1.get_one() is None
+
+    data = {"user": "bob", "preferences": {"language": "es"}}
+    await m1.put(data)
+
+    assert await m1.get() == [data]
+    assert await m1.get_one() == data
