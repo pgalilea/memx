@@ -50,6 +50,14 @@ class SQLiteMemory(BaseMemory):
 
         return messages
 
+    async def put(self, data: dict):
+        await self.add([data])
+
+    async def get_one(self) -> JSON | None:
+        messages = await self.get()
+
+        return messages[-1] if messages else None
+
     async def _pre_add(self):
         pass
 
@@ -79,6 +87,14 @@ class _sync(BaseMemory):
         messages = _merge_messages(result)
 
         return messages  # type: ignore
+
+    def put(self, data: dict):
+        self.pm.sync.add([data])
+
+    def get_one(self) -> JSON | None:
+        messages = self.pm.sync.get()
+
+        return messages[-1] if messages else None
 
     def _pre_add(self):
         pass

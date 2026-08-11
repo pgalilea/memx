@@ -1,6 +1,7 @@
-import tempfile
 from inspect import iscoroutinefunction
 from pathlib import Path
+import tempfile
+from typing import TypedDict
 
 from memx.engine.sqlite import SQLiteEngine
 
@@ -103,5 +104,51 @@ async def test_resume_session_async():
     assert await m2.get() == messages  # type: ignore
     assert await m1.get() == await m2.get()  # type: ignore
     assert await engine.get_session("asdf-11!!") is None
+
+    Path(fp).unlink()
+
+
+def test_put_and_get_one():
+    sqlite_uri = "sqlite+aiosqlite:///:memory:"
+    engine = SQLiteEngine(sqlite_uri, "test-messages", start_up=True)
+    m1 = engine.create_session()
+
+    assert m1.sync.get_one() is None
+
+    data = {"user": "alice", "preferences": {"language": "en"}}
+    m1.sync.put(data)
+
+    assert m1.sync.get() == [data]
+    assert m1.sync.get_one() == data
+
+
+def test_put_typed_dict():
+    class User(TypedDict):
+        name: str
+        age: int
+
+    sqlite_uri = "sqlite+aiosqlite:///:memory:"
+    engine = SQLiteEngine(sqlite_uri, "test-messages", start_up=True)
+    m1 = engine.create_session()
+
+    user: User = {"name": "alice", "age": 30}
+    m1.sync.put(user)
+
+    assert m1.sync.get_one() == user
+
+
+async def test_put_and_get_one_async():
+    fp = tempfile.gettempdir() + "/memx-test.db"
+    sqlite_uri = f"sqlite+aiosqlite:///{fp}"
+    engine = SQLiteEngine(sqlite_uri, "test-messages", start_up=True)
+    m1 = engine.create_session()
+
+    assert await m1.get_one() is None
+
+    data = {"user": "bob", "preferences": {"language": "es"}}
+    await m1.put(data)
+
+    assert await m1.get() == [data]
+    assert await m1.get_one() == data
 
     Path(fp).unlink()

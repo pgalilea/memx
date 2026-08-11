@@ -6,7 +6,7 @@
 <p align="center">Lightweight and extensible memory layer for LLMs.</p>
 <br/><br/>
 
-**Important Disclaimer**: Fix the package version and run your own tests :)
+**Important Disclaimer**: Lock the package version and run your own tests :)
 
 
 ##  🔥 Key Features
