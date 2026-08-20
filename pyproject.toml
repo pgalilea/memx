@@ -1,6 +1,6 @@
 [project]
 name = "memx-ai"
-version = "0.1.15"
+version = "0.1.16"
 description = "Lightweight and extensible memory layer for LLMs"
 readme = "README.md"
 license = "MIT"
@@ -12,7 +12,6 @@ authors = [
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
