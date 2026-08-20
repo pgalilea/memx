@@ -10,6 +10,7 @@ jobs:
     environment: pypi
     permissions:
       id-token: write
+      contents: write
     services:
       docker:
         image: docker:dind
@@ -30,5 +31,14 @@ jobs:
       - name: Build package
         run: uv build
 
+      - name: Check package metadata
+        run: uvx twine check dist/*
+
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+
+      - name: Create release tag
+        run: |
+          VERSION=$(uv run python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+          git tag "v${VERSION}"
+          git push origin "v${VERSION}"
