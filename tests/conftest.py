@@ -1,10 +1,14 @@
 from collections.abc import Generator
 from dataclasses import dataclass
+import os
+
+
+os.environ["TESTCONTAINERS_RYUK_DISABLED"] = "1"
 
 import pytest
-from testcontainers.mongodb import MongoDbContainer
-from testcontainers.postgres import PostgresContainer
-from testcontainers.redis import RedisContainer
+from testcontainers.community.mongodb import MongoDbContainer
+from testcontainers.community.postgres import PostgresContainer
+from testcontainers.community.redis import RedisContainer
 
 
 @dataclass(frozen=True)
