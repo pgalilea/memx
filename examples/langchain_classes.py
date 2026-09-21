@@ -6,6 +6,7 @@ from langchain_core.messages import messages_from_dict
 
 from memx.engine.sqlite import SQLiteEngine
 
+
 model = init_chat_model("gpt-4o-mini")
 
 engine = SQLiteEngine("sqlite+aiosqlite:///:memory:", "memx-messages", setup=True)
@@ -26,15 +27,16 @@ m1.sync.add([response.model_dump(mode="json")])
 
 # a few hours later...
 m2 = engine.sync.get_session(m1.get_id())  # resume the session later
+assert m2 is not None
 message_history = messages_from_dict(
     [{"type": d["type"], "data": d} for d in m2.sync.get()]  # type: ignore
 )  # get previous messages
 
 new_msg = HumanMessage("Good one! any other jokes?")
-m2.sync.add([new_msg.model_dump(mode="json")])  # type: ignore
+m2.sync.add([new_msg.model_dump(mode="json")])
 message_history.append(new_msg)
 
 response = model.invoke(message_history)  # Returns AIMessage
 print("Second response:\n", response)
-m2.sync.add([response.model_dump(mode="json")])  # type: ignore
-m2.sync.get()  # type: ignore
+m2.sync.add([response.model_dump(mode="json")])
+m2.sync.get()

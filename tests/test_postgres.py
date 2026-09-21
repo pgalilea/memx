@@ -51,17 +51,18 @@ def test_resume_session_sync(postgres_uri: str):
     assert m1.sync.get() == messages
 
     m2 = engine.sync.get_session(m1.get_id())
+    assert m2 is not None
     new_messages = [
         {"role": "user", "content": "What is the capital of Japan?"},
         {"role": "assistant", "content": "Tokyo"},
     ]
-    m2.sync.add(new_messages)  # type: ignore
+    m2.sync.add(new_messages)
     messages.extend(new_messages)
 
-    assert m2.sync.get() == messages  # type: ignore
-    assert m1.sync.get() == m2.sync.get()  # type: ignore
+    assert m2.sync.get() == messages
+    assert m1.sync.get() == m2.sync.get()
     assert engine.sync.get_session(uuid7()) is None
-    assert m1.get_id() == m2.get_id()  # type: ignore
+    assert m1.get_id() == m2.get_id()
 
 
 async def test_resume_session_async(postgres_uri: str):
@@ -78,17 +79,18 @@ async def test_resume_session_async(postgres_uri: str):
     assert await m1.get() == messages
 
     m2 = await engine.get_session(m1.get_id())
+    assert m2 is not None
     new_messages = [
         {"role": "user", "content": "What is the capital of Japan?"},
         {"role": "assistant", "content": "Tokyo"},
     ]
-    await m2.add(new_messages)  # type: ignore
+    await m2.add(new_messages)
     messages.extend(new_messages)
 
-    assert await m2.get() == messages  # type: ignore
-    assert await m1.get() == m2.sync.get()  # type: ignore
+    assert await m2.get() == messages
+    assert await m1.get() == m2.sync.get()
     assert await engine.get_session(uuid7()) is None
-    assert m1.get_id() == m2.get_id()  # type: ignore
+    assert m1.get_id() == m2.get_id()
 
 
 def test_put_and_get_one_sync(postgres_uri: str):

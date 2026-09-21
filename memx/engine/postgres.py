@@ -5,7 +5,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from memx.engine import BaseEngine
+from memx.engine import BaseEngine, EngineSync
 from memx.memory.postgres import PostgresMemory
 from memx.models.sql import SQLEngineConfig
 from memx.services import sql_service
@@ -55,7 +55,7 @@ class PostgresEngine(BaseEngine):
             class_=Session,
         )  # type: ignore
 
-        self.sync = _sync(self)
+        self.sync = PostgresEngineSync(self)
 
         if setup:
             self.start_up()  # blocking operation
@@ -119,11 +119,10 @@ class PostgresEngine(BaseEngine):
             session.commit()
 
 
-class _sync:
-    def __init__(self, parent: "PostgresEngine"):
-        self.pe = parent
+class PostgresEngineSync(EngineSync["PostgresEngine"]):
+    """Blocking namespace for PostgresEngine."""
 
-    def get_session(self, id: UUID) -> PostgresMemory | None:
+    def get_session(self, id: str | UUID) -> PostgresMemory | None:
         """Get a memory session."""
 
         if engine_config := sql_service.get_session_sync(self.pe, str(id)):

@@ -49,17 +49,18 @@ def test_resume_session_sync(redis_uri: str):
     assert m1.sync.get() == messages
 
     m2 = engine.sync.get_session(m1.get_id())
+    assert m2 is not None
     new_messages = [
         {"role": "user", "content": "What is the capital of Japan?"},
         {"role": "assistant", "content": "Tokyo"},
     ]
-    m2.sync.add(new_messages)  # type: ignore
+    m2.sync.add(new_messages)
     messages.extend(new_messages)
 
-    assert m2.sync.get() == messages  # type: ignore
-    assert m1.sync.get() == m2.sync.get()  # type: ignore
+    assert m2.sync.get() == messages
+    assert m1.sync.get() == m2.sync.get()
     assert engine.sync.get_session(uuid7()) is None
-    assert m1.get_id() == m2.get_id()  # type: ignore
+    assert m1.get_id() == m2.get_id()
     assert m1.sync_client.ttl(m1.key) == -1  # the key exists, but it has no expiration set
 
 

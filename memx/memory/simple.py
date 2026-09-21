@@ -5,7 +5,7 @@ import pickle
 import aiofiles
 from typing_extensions import deprecated
 
-from memx.memory import BaseMemory
+from memx.memory import BaseMemory, MemorySync
 from memx.utils.uuid import uuid7
 
 
@@ -24,7 +24,7 @@ class DiskMemory(BaseMemory):
 
         self._session_id = file_id
 
-        self.sync = _sync(self)  # to group sync methods
+        self.sync = DiskMemorySync(self)  # to group sync methods
 
     async def add(self, messages: list[dict]):
         # read the file
@@ -61,9 +61,8 @@ class DiskMemory(BaseMemory):
         return messages[-1] if messages else None
 
 
-class _sync(BaseMemory):
-    def __init__(self, parent: "DiskMemory"):
-        self.pm = parent  # parent memory (?)
+class DiskMemorySync(MemorySync["DiskMemory"]):
+    """Blocking namespace for DiskMemory."""
 
     def add(self, messages: list[dict]):
         with open(self.pm.file_path, "rb") as f:
@@ -79,14 +78,6 @@ class _sync(BaseMemory):
             stored_messages: list[dict] = pickle.load(f)
 
         return stored_messages
-
-    def put(self, data: dict):
-        self.pm.sync.add([data])
-
-    def get_one(self) -> dict | None:
-        messages = self.pm.sync.get()
-
-        return messages[-1] if messages else None
 
 
 @deprecated("Use SQLiteMemory with :memory: URI instead")

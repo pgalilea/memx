@@ -3,7 +3,7 @@ from sqlalchemy import Result, text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.orm import Session, sessionmaker
 
-from memx.memory import BaseMemory
+from memx.memory import BaseMemory, MemorySync
 from memx.models import JSON
 from memx.models.sql import SQLEngineConfig
 from memx.services import sql_service
@@ -23,7 +23,7 @@ class SQLiteMemory(BaseMemory):
 
         self.engine_config = engine_config
 
-        self.sync = _sync(self)  # to group sync methods
+        self.sync = SQLiteMemorySync(self)  # to group sync methods
 
         if session_id:
             self._session_id = session_id
@@ -62,15 +62,10 @@ class SQLiteMemory(BaseMemory):
         pass
 
 
-class _sync(BaseMemory):
-    """Sync methods for SQLiteMemory."""
-
-    def __init__(self, parent: "SQLiteMemory"):
-        self.pm = parent  # parent memory (?)
+class SQLiteMemorySync(MemorySync["SQLiteMemory"]):
+    """Blocking namespace for SQLiteMemory."""
 
     def add(self, messages: list[JSON]):
-        self._pre_add()
-
         data = sql_service.format_messages(self.pm._session_id, messages)
 
         with self.pm.SyncSession() as session:
@@ -84,20 +79,7 @@ class _sync(BaseMemory):
                 {"session_id": self.pm._session_id},
             )
 
-        messages = _merge_messages(result)
-
-        return messages  # type: ignore
-
-    def put(self, data: dict):
-        self.pm.sync.add([data])
-
-    def get_one(self) -> JSON | None:
-        messages = self.pm.sync.get()
-
-        return messages[-1] if messages else None
-
-    def _pre_add(self):
-        pass
+        return _merge_messages(result)
 
 
 def _merge_messages(msg_result: Result) -> list[JSON]:

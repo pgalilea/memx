@@ -1,7 +1,9 @@
+from uuid import UUID
+
 import redis
 from redis.commands.json.path import Path
 
-from memx.engine import BaseEngine
+from memx.engine import BaseEngine, EngineSync
 from memx.memory.redis import RedisMemory
 from memx.models import RedisEngineConfig
 from memx.utils import filter_kwargs
@@ -33,7 +35,7 @@ class RedisEngine(BaseEngine):
             prefix=self.key_prefix, array_path=self.array_path, ttl=ttl
         )
 
-        self.sync = _sync(self)
+        self.sync = RedisEngineSync(self)
 
         if setup:
             self.start_up()  # blocking operation
@@ -64,12 +66,11 @@ class RedisEngine(BaseEngine):
             raise RuntimeError("RedisJSON not found") from e
 
 
-class _sync:
-    """Sync methods for RedisEngine."""
+class RedisEngineSync(EngineSync["RedisEngine"]):
+    """Blocking namespace for RedisEngine."""
 
-    def __init__(self, parent: "RedisEngine"):
-        self.pe = parent
-
-    def get_session(self, id: str) -> RedisMemory | None:
+    def get_session(self, id: str | UUID) -> RedisMemory | None:
         if self.pe.sync_client.exists(f"{self.pe.key_prefix}{id}") > 0:  # type: ignore
-            return RedisMemory(self.pe.async_client, self.pe.sync_client, self.pe.engine_config, id)
+            return RedisMemory(
+                self.pe.async_client, self.pe.sync_client, self.pe.engine_config, str(id)
+            )

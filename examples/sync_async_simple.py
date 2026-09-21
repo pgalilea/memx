@@ -17,9 +17,12 @@ def test_flow_sync(engine: SQLiteEngine | PostgresEngine | MongoDBEngine | Redis
     print(m1.sync.get())
 
     m2 = engine.sync.get_session(id=session_id)  # resume the session
+    assert m2 is not None
     m2.sync.add([{"role": "user", "content": "What is the capital of France?"}])
 
-    print(engine.sync.get_session(id=session_id).sync.get())
+    m3 = engine.sync.get_session(id=session_id)
+    assert m3 is not None
+    print(m3.sync.get())
 
 
 async def test_flow_async(engine: SQLiteEngine | PostgresEngine | MongoDBEngine | RedisEngine):
@@ -33,9 +36,12 @@ async def test_flow_async(engine: SQLiteEngine | PostgresEngine | MongoDBEngine 
     print(await m1.get())
 
     m2 = await engine.get_session(session_id)  # resume the session
+    assert m2 is not None
     await m2.add([{"role": "user", "content": "What is the capital of France?"}])
 
-    print(await (await engine.get_session(session_id)).get())
+    m3 = await engine.get_session(session_id)
+    assert m3 is not None
+    print(await m3.get())
 
     await _close_engine(engine)
 

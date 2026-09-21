@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 import redis
 from redis.commands.json.path import Path
 
-from memx.memory import BaseMemory
+from memx.memory import BaseMemory, MemorySync
 from memx.models import JSON, RedisEngineConfig
 from memx.utils.uuid import uuid7
 
@@ -21,7 +21,7 @@ class RedisMemory(BaseMemory):
 
         self.engine_config = engine_config
 
-        self.sync = _sync(self)  # to group sync methods
+        self.sync = RedisMemorySync(self)  # to group sync methods
 
         if session_id:
             self._session_id = session_id
@@ -65,9 +65,8 @@ class RedisMemory(BaseMemory):
         return messages[-1] if messages else None
 
 
-class _sync(BaseMemory):
-    def __init__(self, parent: "RedisMemory"):
-        self.pm = parent  # parent memory (?)
+class RedisMemorySync(MemorySync["RedisMemory"]):
+    """Blocking namespace for RedisMemory."""
 
     def add(self, messages: list[JSON]):
         ts_now = datetime.now(UTC).isoformat()
@@ -93,11 +92,3 @@ class _sync(BaseMemory):
     def get(self) -> list[JSON]:
         messages = self.pm.sync_client.json().get(self.pm.key, self.pm.engine_config.array_path)  # type: ignore
         return messages or []  # type: ignore
-
-    def put(self, data: dict):
-        self.pm.sync.add([data])
-
-    def get_one(self) -> JSON | None:
-        messages = self.pm.sync.get()
-
-        return messages[-1] if messages else None

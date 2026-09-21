@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 from pymongo.asynchronous.collection import AsyncCollection
 from pymongo.collection import Collection
 
-from memx.memory import BaseMemory
+from memx.memory import BaseMemory, MemorySync
 from memx.utils.uuid import uuid7
 
 
@@ -17,7 +17,7 @@ class MongoDBMemory(BaseMemory):
         self.async_collection = async_collection
         self.sync_collection = sync_collection
 
-        self.sync = _sync(self)  # to group sync methods
+        self.sync = MongoDBMemorySync(self)  # to group sync methods
 
         if session_id:
             self._session_id = session_id
@@ -51,11 +51,8 @@ class MongoDBMemory(BaseMemory):
         return messages[-1] if messages else None
 
 
-class _sync(BaseMemory):
-    """Sync methods for MongoDBMemory."""
-
-    def __init__(self, parent: "MongoDBMemory"):
-        self.pm = parent  # parent memory (?)
+class MongoDBMemorySync(MemorySync["MongoDBMemory"]):
+    """Blocking namespace for MongoDBMemory."""
 
     def add(self, messages: list[dict]):
         ts_now = datetime.now(UTC)
@@ -74,11 +71,3 @@ class _sync(BaseMemory):
         doc = self.pm.sync_collection.find_one({"session_id": self.pm._session_id})
 
         return (doc or {}).get("messages", [])
-
-    def put(self, data: dict):
-        self.pm.sync.add([data])
-
-    def get_one(self) -> dict | None:
-        messages = self.pm.sync.get()
-
-        return messages[-1] if messages else None

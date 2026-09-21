@@ -1,5 +1,5 @@
-import inspect
 from collections.abc import Callable
+import inspect
 
 
 def filter_kwargs(fn: Callable, _kwargs: dict) -> dict:

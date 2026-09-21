@@ -1,10 +1,11 @@
 from textwrap import dedent
+from uuid import UUID
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from memx.engine import BaseEngine
+from memx.engine import BaseEngine, EngineSync
 from memx.memory.sqlite import SQLiteMemory
 from memx.models.sql import SQLEngineConfig
 from memx.services import sql_service
@@ -44,7 +45,7 @@ class SQLiteEngine(BaseEngine):
             class_=Session,
         )
 
-        self.sync = _sync(self)
+        self.sync = SQLiteEngineSync(self)
 
         if setup:
             self.start_up()  # blocking operation
@@ -104,14 +105,13 @@ class SQLiteEngine(BaseEngine):
             conn.connection.executescript(self.table_sql)
 
 
-class _sync:
-    def __init__(self, parent: "SQLiteEngine"):
-        self.pe = parent
+class SQLiteEngineSync(EngineSync["SQLiteEngine"]):
+    """Blocking namespace for SQLiteEngine."""
 
-    def get_session(self, id: str) -> SQLiteMemory | None:
+    def get_session(self, id: str | UUID) -> SQLiteMemory | None:
         """Get a memory session."""
 
-        if engine_config := sql_service.get_session_sync(self.pe, id):
-            return SQLiteMemory(self.pe.AsyncSession, self.pe.SyncSession, engine_config, id)
+        if engine_config := sql_service.get_session_sync(self.pe, str(id)):
+            return SQLiteMemory(self.pe.AsyncSession, self.pe.SyncSession, engine_config, str(id))
 
         return None  # explicit is better than implicit

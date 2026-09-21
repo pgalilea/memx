@@ -1,7 +1,9 @@
+from uuid import UUID
+
 from pymongo import AsyncMongoClient, MongoClient
 from pymongo.server_api import ServerApi
 
-from memx.engine import BaseEngine
+from memx.engine import BaseEngine, EngineSync
 from memx.memory.mongodb import MongoDBMemory
 
 
@@ -29,7 +31,7 @@ class MongoDBEngine(BaseEngine):
         self.sync_collection = self.sync_db[collection]
         self.async_collection = self.async_db[collection]
 
-        self.sync = _sync(self)
+        self.sync = MongoDBEngineSync(self)
 
         if ttl:
             self.start_up(ttl=ttl)  # blocking operation
@@ -67,14 +69,11 @@ class MongoDBEngine(BaseEngine):
                 # print(f"Created TTL in '{self.sync_collection}' for '{field}' with {ttl} seconds")
 
 
-class _sync:
-    """Sync methods for MongoDBEngine."""
+class MongoDBEngineSync(EngineSync["MongoDBEngine"]):
+    """Blocking namespace for MongoDBEngine."""
 
-    def __init__(self, parent: "MongoDBEngine"):
-        self.pe = parent
-
-    def get_session(self, id: str) -> MongoDBMemory | None:
+    def get_session(self, id: str | UUID) -> MongoDBMemory | None:
         """Get a memory session."""
 
-        if self.pe.sync_collection.find_one({"session_id": id}, {"_id": 1}) is not None:
-            return MongoDBMemory(self.pe.async_collection, self.pe.sync_collection, id)
+        if self.pe.sync_collection.find_one({"session_id": str(id)}, {"_id": 1}) is not None:
+            return MongoDBMemory(self.pe.async_collection, self.pe.sync_collection, str(id))

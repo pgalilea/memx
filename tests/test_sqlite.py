@@ -61,11 +61,12 @@ def test_resume_session():
     assert m1.sync.get() == messages
 
     m2 = engine.sync.get_session(m1.get_id())
+    assert m2 is not None
 
-    assert m2.sync.get() == messages  # type: ignore
-    assert m1.sync.get() == m2.sync.get()  # type: ignore
+    assert m2.sync.get() == messages
+    assert m1.sync.get() == m2.sync.get()
     assert engine.sync.get_session("asdf") is None
-    assert m1.get_id() == session_id == m2.get_id()  # type: ignore
+    assert m1.get_id() == session_id == m2.get_id()
 
 
 async def test_simple_add_async():
@@ -100,9 +101,10 @@ async def test_resume_session_async():
     assert await m1.get() == messages
 
     m2 = await engine.get_session(m1.get_id())
+    assert m2 is not None
 
-    assert await m2.get() == messages  # type: ignore
-    assert await m1.get() == await m2.get()  # type: ignore
+    assert await m2.get() == messages
+    assert await m1.get() == await m2.get()
     assert await engine.get_session("asdf-11!!") is None
 
     Path(fp).unlink()
