@@ -50,6 +50,10 @@ class MongoDBEngine(BaseEngine):
 
         self._create_ttl_index(ttl)
 
+    async def close(self) -> None:
+        """Close the asynchronous MongoDB client."""
+        await self.async_client.close()
+
     def _create_ttl_index(self, ttl: int):
         """
         Create the TTL index if it doesn't exist.
@@ -77,3 +81,7 @@ class MongoDBEngineSync(EngineSync["MongoDBEngine"]):
 
         if self.pe.sync_collection.find_one({"session_id": str(id)}, {"_id": 1}) is not None:
             return MongoDBMemory(self.pe.async_collection, self.pe.sync_collection, str(id))
+
+    def close(self) -> None:
+        """Close the synchronous MongoDB client."""
+        self.pe.sync_client.close()

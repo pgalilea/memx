@@ -19,6 +19,10 @@ class EngineSync(Generic[Eng]):
     def get_session(self, id: str | UUID) -> BaseMemory | None:
         raise NotImplementedError
 
+    def close(self) -> None:
+        """Close the engine's synchronous client."""
+        raise NotImplementedError
+
 
 class BaseEngine(ABC):
     sync: EngineSync
@@ -31,4 +35,9 @@ class BaseEngine(ABC):
     @abstractmethod
     def get_session(self, session_id: str) -> BaseMemory | None:
         """Get a memory session from backend."""
+        pass
+
+    @abstractmethod
+    async def close(self) -> None:
+        """Close the engine's asynchronous client."""
         pass

@@ -68,6 +68,10 @@ class SQLiteEngine(BaseEngine):
 
         return None  # explicit is better than implicit
 
+    async def close(self) -> None:
+        """Close the asynchronous database engine."""
+        await self.async_engine.dispose()
+
     def _init_queries(self):
         """Initialize the queries for the engine."""
 
@@ -115,3 +119,7 @@ class SQLiteEngineSync(EngineSync["SQLiteEngine"]):
             return SQLiteMemory(self.pe.AsyncSession, self.pe.SyncSession, engine_config, str(id))
 
         return None  # explicit is better than implicit
+
+    def close(self) -> None:
+        """Close the synchronous database engine."""
+        self.pe.sync_engine.dispose()

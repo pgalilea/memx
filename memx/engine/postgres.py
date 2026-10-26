@@ -78,6 +78,10 @@ class PostgresEngine(BaseEngine):
 
         return None  # explicit is better than implicit
 
+    async def close(self) -> None:
+        """Close the asynchronous database engine."""
+        await self.async_engine.dispose()
+
     def _init_queries(self):
         """Initialize the queries for the engine."""
 
@@ -121,6 +125,10 @@ class PostgresEngine(BaseEngine):
 
 class PostgresEngineSync(EngineSync["PostgresEngine"]):
     """Blocking namespace for PostgresEngine."""
+
+    def close(self) -> None:
+        """Close the synchronous database engine."""
+        self.pe.sync_engine.dispose()
 
     def get_session(self, id: str | UUID) -> PostgresMemory | None:
         """Get a memory session."""

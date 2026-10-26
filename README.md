@@ -152,7 +152,7 @@ m4 = e4.create_session()
 
 ## 🧪 Tests
 ```sh
-uv run pytest tests -vs
+uv run pytest -vs
 ```
 
 ## 📝 Tasks

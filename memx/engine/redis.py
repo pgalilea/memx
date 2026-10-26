@@ -50,6 +50,10 @@ class RedisEngine(BaseEngine):
         if (await self.async_client.exists(f"{self.key_prefix}{id}")) > 0:
             return RedisMemory(self.async_client, self.sync_client, self.engine_config, id)
 
+    async def close(self) -> None:
+        """Close the asynchronous Redis client."""
+        await self.async_client.aclose()
+
     def start_up(self):
         """Check if the Redis instance is available and if RedisJSON is installed."""
 
@@ -68,6 +72,10 @@ class RedisEngine(BaseEngine):
 
 class RedisEngineSync(EngineSync["RedisEngine"]):
     """Blocking namespace for RedisEngine."""
+
+    def close(self) -> None:
+        """Close the synchronous Redis client."""
+        self.pe.sync_client.close()
 
     def get_session(self, id: str | UUID) -> RedisMemory | None:
         if self.pe.sync_client.exists(f"{self.pe.key_prefix}{id}") > 0:  # type: ignore
